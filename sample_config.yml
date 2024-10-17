@@ -1,0 +1,23 @@
+# THIS IS A SAMPLE, YOU NEED TO MAKE YOUR OWN config.yml file
+
+# Your Canvas API authorization key, obtained by following: https://canvas.instructure.com/doc/api/file.oauth.html#manual-token-generation
+auth_key: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
+
+# The course id: you can obtain from the url: https://q.utoronto.ca/courses/[>= 6-digit number]
+course_id: 0
+
+# The course id: you can obtain from the url: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
+assignment_id: 0
+
+# Full path to the CSV file with the grades. 
+# The script assumes comma-delimited
+#   The first line being the header "id, grade"
+#   The remaining lines use the format id, grade
+#   ID = UTORid or groupid (if group assignment)
+# NOTE: if you want to do this for a subset of students or groups, the file should contain just those students or groups
+grade_file_location: "[path]/[filename].csv"
+
+# For uploading additional files that aren't rubrics
+# Loops through all specified folders
+# Files within these folders must be named starting with UTORid
+additional_upload_paths: []
