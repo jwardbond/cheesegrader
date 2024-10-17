@@ -1,28 +1,51 @@
 
-# gradtools
+# Cheesegrader
 
-## Setting up Gradtools
+- [Cheesegrader](#cheesegrader)
+  - [Setting up Cheesegrader](#setting-up-cheesegrader)
+  - [Config](#config)
+  - [Examples](#examples)
+    - [Downloading student lists](#downloading-student-lists)
+    - [Uploading grades](#uploading-grades)
+    - [Downloading Assignments from Quercus](#downloading-assignments-from-quercus)
 
-Run 
-~~~console
-pip install -r requirements.txt
-~~~
+## Setting up Cheesegrader
+<a name="setup"></a>
 
-Create a `config.yml` file. An example config file has been provided (`sample_config.yml`). The minimum possible data required is
+1. Download these repository off github, or clone it into your grading directory
+2. Run `pip install -r requirements.txt` to install everything you need
+3. Create a `config.yml` file (see below)
+
+## Config
+<a name="config"></a>
+
+Cheesegrader uses a `config.yml` file to control everything.  An example config file has been provided (`sample_config.yml`). If you want to use it to interact with quercus APIs, then this file needs to contain, at minimum:
 
 ~~~yaml
-    # Your Canvas API authorization token, obtained by following: https://canvas.instructure.com/doc/api/file.oauth.html#manual-token-generation
-    token: 
+    # Your Canvas API authorization token 
+    token: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
 
     # The course id, which you can obtain from the quercus url e.g. https://q.utoronto.ca/courses/[>= 6-digit number]
     course_id: 0
 ~~~
 
-## Scripts
+>[!IMPORTANT]
+> You can get your API authorization token by following the instructions here: https://canvas.instructure.com/doc/api/file.oauth.html#manual-token-generation. Which basically tells you to go to `quercus > account > settings > approved integrations`   
 
-### `upload.py`
+## Examples
+### Downloading student lists
+<a name="s"></a>
+Cheesegrader can be used to generate student lists that include internal quercus ids, as well as utorids. This is useful when downloading assignments off of quercus. To use:
+1. Add the following line to your `config.yml` file:
+    ~~~yaml
+        student_list_path: "path/filename.csv"
+    ~~~
+2. Run `python cheesegrader -s`
 
-`upload.py` uploads PDF rubrics and grades to Quercus for a given assignment using Canvas APIs.
+### Uploading grades
+<a name="u"></a>
+
+Cheesegrader can be used to upload grades and other marking documents (rubrics, mark-ups) for a given assignment. This can be done on a per-group or per-student basis. To use:
 
 1. Prepare all rubrics in a single folder location. All rubrics must be named in a `UTORid_filename.pdf` format.
      >[!IMPORTANT] Team assignments
@@ -46,11 +69,8 @@ Create a `config.yml` file. An example config file has been provided (`sample_co
         additional_upload_paths: ["path_to_folder_1", "path_to_folder_2"]
     ~~~
 
-4. To upload rubrics, call
+4. Run `python cheesegrader -u` and follow the prompts
 
-    ~~~console
-    python upload.py <path-to-config-json>
-    ~~~
 
-## Downloading Assignments from Quercus
-<https://q.utoronto.ca/api/v1/courses/{course_id}/students>
+### Downloading Assignments from Quercus
+tbd
