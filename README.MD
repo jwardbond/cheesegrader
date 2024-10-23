@@ -13,7 +13,7 @@
 ## Setting up Cheesegrader
 <a name="setup"></a>
 
-1. Download these repository off github, or clone it into your grading directory
+1. Download this repository off github, or clone it into your grading directory
 2. Run `pip install -r requirements.txt` to install everything you need
 3. Create a `config.yml` file (see below)
 
@@ -59,6 +59,8 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
    - The first line of the file must have the header `id, grade`
    - Each line must contain `[id], [grade]`
 3. Fill out the `api > upload` section of config.yml`
+    > [!IMPORTANT] Uploading files
+    > You can use `additional_upload_paths` in `config.yml` to include folders containing files you want to upload. This is useful when you have (e.g.) rubrics or marked-up assignments that you want to hand back. The files in these folders must have the `UTORid` (or `TEAMid`) somewhere in their name.
 
 4. Run `python cheesegrader.py -u` and follow the prompts
 

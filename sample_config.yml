@@ -1,23 +1,22 @@
-# THIS IS A SAMPLE, YOU NEED TO MAKE YOUR OWN config.yml file
-
-# Your Canvas API authorization key, obtained by following: https://canvas.instructure.com/doc/api/file.oauth.html#manual-token-generation
-auth_key: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
-
-# The course id: you can obtain from the url: https://q.utoronto.ca/courses/[>= 6-digit number]
-course_id: 0
-
-# The course id: you can obtain from the url: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
-assignment_id: 0
-
-# Full path to the CSV file with the grades. 
-# The script assumes comma-delimited
-#   The first line being the header "id, grade"
-#   The remaining lines use the format id, grade
-#   ID = UTORid or groupid (if group assignment)
-# NOTE: if you want to do this for a subset of students or groups, the file should contain just those students or groups
-grade_file_location: "[path]/[filename].csv"
-
-# For uploading additional files that aren't rubrics
-# Loops through all specified folders
-# Files within these folders must be named starting with UTORid
-additional_upload_paths: []
+sapi:
+  # Your Canvas API key, from https://canvas.instructure.com/doc/api/file.oauth.html#manual-token-generation. See README for more
+  auth_key: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%" 
+  course_id: 123456 # Quercus course id, obtained from https://q.utoronto.ca/courses/[>= 6-digit number]
+  students:
+    output_dir: "/path/" # The folder you want to output the list to
+  uploading:
+    assignment_id: 1353113                          # The assigment id, obtained from: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
+    grade_filepath: "/path/filename.csv"           # Absolute path to grade file. The README has more details on how to format this file
+    additional_upload_paths: ["/path1/", "/path2"]  # A list of folders containing other files you want to upload (e.g. rubrics). See README for more. 
+file_utils:
+  student_list: "/path/filename.csv" # Absolute path to student list.
+  copying:
+    input_filepath: "/path/filename.csv"  # Absolute path to input file.
+    output_dir: "/path/"                  # Absolute path to output folder
+    name_cols: []                         # Columns in student list to use for filenames. E.g [0,1]
+  sorting:
+    input_dir: "/path/"     # Path to the directory containing files to sort
+    sort_cols: []           # Columns in student list to use when sorting files. E.g. [0]
+    output_dir: "/path/"    # Path to the parent directory in which your want to store sorted files/folders
+    move: True              # True if you want to move the files, False if you want to copy them
+    id_col: 0               # Column in student list used to identify files (filename should contain this info and it should be unique)

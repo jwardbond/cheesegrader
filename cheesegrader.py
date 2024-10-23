@@ -56,7 +56,7 @@ if __name__ == "__main__":
         course_id = conf["api"]["course_id"]
         assignment_id = conf["api"]["upload"]["assignment_id"]
 
-        grade_file_path = Path(conf["api"]["upload"]["grade_file_path"])
+        grade_filepath = Path(conf["api"]["upload"]["grade_file_path"])
         folder_paths = [
             Path(f) for f in conf["api"]["upload"]["additional_upload_paths"]
         ]
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         course = QuercusCourse(course_id, auth_key)
         course.upload_grades(
             assignment_id,
-            grade_file_path,
+            grade_filepath,
             folder_paths,
         )
 
