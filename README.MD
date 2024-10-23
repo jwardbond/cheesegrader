@@ -50,19 +50,20 @@ Cheesegrader can be used to generate student lists that include internal quercus
 Cheesegrader can be used to upload grades and other marking documents (rubrics, mark-ups) for a given assignment. This can be done on a per-group or per-student basis. To use:
 
 1. Prepare all rubrics in a single folder location. All rubrics must be named in a `UTORid_filename.pdf` format.
->[!IMPORTANT] Team assignments
-> Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
->
-> For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
-2. Prepare a file with the grades.
+   
+  >[!IMPORTANT] Team assignments
+  > Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
+  >
+  > For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
+1. Prepare a file with the grades.
    - The file must be a `.csv`
    - The first line of the file must have the header `id, grade`
    - Each line must contain `[id], [grade]`
-3. Fill out the `api > upload` section of config.yml`
+2. Fill out the `api > upload` section of config.yml`
     > [!IMPORTANT] Uploading files
     > You can use `additional_upload_paths` in `config.yml` to include folders containing files you want to upload. This is useful when you have (e.g.) rubrics or marked-up assignments that you want to hand back. The files in these folders must have the `UTORid` (or `TEAMid`) somewhere in their name.
 
-4. Run `python cheesegrader.py -u` and follow the prompts
+3. Run `python cheesegrader.py -u` and follow the prompts
 
 ### Generating Copies (and other files)
 <a name="cr"></a>
