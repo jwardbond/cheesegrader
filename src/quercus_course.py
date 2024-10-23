@@ -80,6 +80,10 @@ class QuercusCourse(object):
             ],
         ]
 
+        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(
+            lambda s: s.split(", ")[1]
+        )
+
         print(
             f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records"
         )

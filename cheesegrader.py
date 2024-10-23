@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from src import QuercusCourse
+from src import QuercusCourse, copy_rename, filesorter
 
 
 if __name__ == "__main__":
@@ -26,8 +26,20 @@ if __name__ == "__main__":
         action="store_true",
         help="Download as student list and save as csv",
     )
+    group.add_argument(
+        "-cr",
+        "--copyrename",
+        action="store_true",
+        help="Copy a file and rename it according to a student list",
+    )
+    group.add_argument(
+        "-o",
+        "--sort",
+        action="store_true",
+        help="Sort named files by grader or section",
+    )
 
-    parser.add_argument("confpath", type=str, help="Path to config file")
+    # parser.add_argument("confpath", type=str, help="Path to config file")
 
     args = parser.parse_args()
 
@@ -35,42 +47,60 @@ if __name__ == "__main__":
     with open("./config.yml") as f:
         conf = yaml.safe_load(f)
 
-    # Run scripts
+    # Run whatever script was called
     if args.upload:
-        grade_file_path = Path(conf["grade_file_path"])
-        folder_paths = [Path(f) for f in conf["additional_upload_paths"]]
+        # Get relevant data from config
+        auth_key = conf["api"]["auth_key"]
 
-        course = QuercusCourse(conf["course_id"], conf["auth_key"])
+        course_id = conf["api"]["course_id"]
+        assignment_id = conf["api"]["upload"]["assignment_id"]
+
+        grade_file_path = Path(conf["api"]["upload"]["grade_file_path"])
+        folder_paths = [
+            Path(f) for f in conf["api"]["upload"]["additional_upload_paths"]
+        ]
+
+        # Upload
+        course = QuercusCourse(course_id, auth_key)
         course.upload_grades(
-            conf["assignment_id"],
+            assignment_id,
             grade_file_path,
             folder_paths,
         )
 
     elif args.students:
-        course = QuercusCourse(conf["course_id"], conf["auth_key"])
-        print(course.students)
-        pass  # TODO finish implementation
+        # Get relevant data from config
+        course_id = conf["api"]["course_id"]
+        auth_key = conf["api"]["auth_key"]
+        output_dir = Path(conf["api"]["students"]["output_dir"])
+
+        # Download student list
+        course = QuercusCourse(course_id, auth_key)
+        output_filepath = output_dir / f"{course_id}_student_list.csv"
+        course.generate_student_dataframe().to_csv(output_filepath)
+
+        print(f"Generated student list at {output_filepath}")
+
+    elif args.copyrename:
+        # Get relevant data from config
+        student_list = Path(conf["file_utils"]["student_list"])
+        input_filepath = Path(conf["file_utils"]["copying"]["input_filepath"])
+        if conf["file_utils"]["copying"]["output_dir"]:
+            output_dir = Path(conf["file_utils"]["copying"]["output_dir"])
+        else:
+            output_dir = None
+
+        name_cols = conf["file_utils"]["copying"]["name_cols"]
+
+        # Run
+        copy_rename(student_list, input_filepath, output_dir, name_cols)
+
+    elif args.sort:
+        student_list = Path(conf["file_utils"]["student_list"])
+        input_folder = Path(conf["file_utils"]["sorting"]["input_folder"])
+        sort_cols = conf["file_utils"]["sorting"]["input_folder"]
+        # output_dir =
+        # move =
 
     else:
         raise ValueError("Bad option")  # TODO takeout, probably don't need.
-
-
-# @click.group(context_settings=CONTEXT_SETTINGS)
-# @click.version_option(version='0.1.0', prog_name="hello")
-# def control():
-#     pass
-
-# def dl_students():
-#     print('dl-students')
-
-#     course_id = CONFIG['course_id']
-#     auth_key = TOKEN
-
-#     course = QuercusCourse(course_id, auth_key)
-
-
-#     print(f'Fetching student list for {course.get_course_title()}\n')
-
-#     df = student_list.get_student_list_dataframe()
-#     df.to_csv('quercus_student_list.csv', index=False)
