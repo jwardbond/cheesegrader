@@ -76,8 +76,8 @@ if __name__ == "__main__":
 
         # Download student list
         course = QuercusCourse(course_id, auth_key)
-        output_filepath = output_dir / f"{course_id}_student_list.csv"
-        course.generate_student_dataframe().to_csv(output_filepath)
+        output_filepath = output_dir / f"{course_id}_stusdent_list.csv"
+        course.generate_student_dataframe().to_csv(output_filepath, index=False)
 
         print(f"Generated student list at {output_filepath}")
 

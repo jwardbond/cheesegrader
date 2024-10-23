@@ -7,6 +7,7 @@
   - [Examples](#examples)
     - [Downloading student lists](#downloading-student-lists)
     - [Uploading grades](#uploading-grades)
+    - [Generating Rubrics (and other files)](#generating-rubrics-and-other-files)
     - [Downloading Assignments from Quercus](#downloading-assignments-from-quercus)
 
 ## Setting up Cheesegrader
@@ -22,11 +23,12 @@
 Cheesegrader uses a `config.yml` file to control everything.  An example config file has been provided (`sample_config.yml`). If you want to use it to interact with quercus APIs, then this file needs to contain, at minimum:
 
 ~~~yaml
-    # Your Canvas API authorization token 
-    token: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
+    api:
+        # Your Canvas API authorization token 
+        token: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
 
-    # The course id, which you can obtain from the quercus url e.g. https://q.utoronto.ca/courses/[>= 6-digit number]
-    course_id: 0
+        # The course id, which you can obtain from the quercus url e.g. https://q.utoronto.ca/courses/[>= 6-digit number]
+        course_id: 0
 ~~~
 
 >[!IMPORTANT]
@@ -37,9 +39,11 @@ Cheesegrader uses a `config.yml` file to control everything.  An example config 
 <a name="s"></a>
 Cheesegrader can be used to generate student lists that include internal quercus ids, as well as utorids. This is useful when downloading assignments off of quercus. To use:
 1. Add the following line to your `config.yml` file:
+    
     ~~~yaml
-        student_list_path: "path/filename.csv"
+        output_dir: "path"
     ~~~
+
 2. Run `python cheesegrader -s`
 
 ### Uploading grades
@@ -58,18 +62,24 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
    - Each line must contain `[id], [grade]`
 3. Add the following to your `config.yml` file:
     ~~~yaml
-        # The course id: you can obtain from the url: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
-        assignment_id: 0,
+        api:
+            token: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
+            course_id: 0
+            upload:
+                # The course id: you can obtain from the url: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
+                assignment_id: 0
 
-        # Absolute path to the CSV file with the grades. 
-        grade_file_path: "path/filename.csv",
+                # Absolute path to the CSV file with the grades. 
+                grade_file_path: "path/filename.csv"
 
-        # OPTIONAL list of folders for containing additional grading files for upload (e.g. rubrics, marked-up assignments)
-        # Files within these folders must have names starting with UTORid
-        additional_upload_paths: ["path_to_folder_1", "path_to_folder_2"]
+                # OPTIONAL list of folders for containing additional grading files for upload (e.g. rubrics, marked-up assignments)
+                # Files within these folders must have names starting with UTORid
+                additional_upload_paths: ["path_to_folder_1", "path_to_folder_2"]
     ~~~
 
 4. Run `python cheesegrader -u` and follow the prompts
+
+### Generating Rubrics (and other files)
 
 
 ### Downloading Assignments from Quercus
