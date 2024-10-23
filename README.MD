@@ -9,6 +9,7 @@
     - [Uploading grades](#uploading-grades)
     - [Generating copies (and other files)](#generating-copies-and-other-files)
     - [Sorting files](#sorting-files)
+  - [Contact](#contact)
 
 ## Setting up Cheesegrader
 <a name="setup"></a>
@@ -98,3 +99,6 @@ Cheesegrader can be used to sort class files into folders. This is useful when (
 > This program will automatically create subfolders in your specified `output_dir`. If you want to have more than one level of subfolders (e.g. one folder per TA, followed by one folder for each section that TA is marking) specify the additional levels using `sort_cols`. 
 >
 >This creates the folder hierarchy left-to-right through the list. For instance `sort_cols:[4,0]` would first create one folder for whatever is in column 0 of your student list, and then create *sub* folders using whatever is in column 4.
+
+## Contact
+This is very much in beta. If you need some help please reach out to me at jesse.wardbond at mail.utoronto.ca
