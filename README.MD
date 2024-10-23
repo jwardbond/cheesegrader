@@ -1,5 +1,6 @@
 
 # Cheesegrader
+Cheesegrader is a set of grading tools I use to make my life easier. You can do things like: automatically upload rubrics and grades to quercus, download complete student lists, sort assignments into folders, etc. It's very much in beta, so if you need any help with it please reach out to me at jesse.wardbond at mail.utoronto.ca.
 
 - [Cheesegrader](#cheesegrader)
   - [Setting up Cheesegrader](#setting-up-cheesegrader)
