@@ -50,10 +50,7 @@ Cheesegrader can be used to generate student lists that include internal quercus
 Cheesegrader can be used to upload grades and other marking documents (rubrics, mark-ups) for a given assignment. This can be done on a per-group or per-student basis. To use:
 
 1. Prepare all rubrics in a single folder location. All rubrics must be named in a `UTORid_filename.pdf` format.
-    >[!NOTE]
-    > Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
-    >
-    > For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
+
 
 2. Prepare a file with the grades.
    - The file must be a `.csv`
@@ -64,10 +61,17 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
 
 4. Run `python cheesegrader.py -u` and follow the prompts
 
-
-
-> [!NOTE] Uploading files
+> [!NOTE]
+> Uploading files
+> 
 > You can use `additional_upload_paths` in `config.yml` to include folders containing files you want to upload. This is useful when you have (e.g.) rubrics or marked-up assignments that you want to hand back. The files in these folders must have the `UTORid` (or `TEAMid`) somewhere in their name.
+
+>[!NOTE]
+> Team assignments
+>
+> Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
+>
+> For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
 
 ### Generating Copies (and other files)
 <a name="cr"></a>
@@ -77,8 +81,10 @@ Cheesegrader can be used generate copies of a single file for every student in a
 1. Fill out the `file_utils > copying` section of `config.yml`
 2. Run `python cheesegrader.py -cr`
 
->[!NOTE] name_cols
-> The file you copy will have additional names prepended to it, e.g. "rubric.pdf" becomes "129039_jesse_rubric.pdf". Use name_cols to indicate which columns in your student list contain the information you want to add. 
+>[!NOTE]
+> `name_cols`
+> 
+> The file you copy will have additional names prepended to it, e.g. "rubric.pdf" becomes "129039_jesse_rubric.pdf". Use `name_cols` to indicate which columns in your student list contain the information you want to add. 
 
 ### Sorting Files
 <a name="o"></a>
