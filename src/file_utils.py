@@ -61,9 +61,9 @@ def filesorter(
     student_list: pathlib.Path,
     input_folder: pathlib.Path,
     sort_cols: list,
-    output_dir: pathlib.Path = None,
-    move: bool = False,
-    id_col: int = 0,
+    output_dir: pathlib.Path,
+    move: bool,
+    id_col: int,
 ):
     """
     Sorts files into folders based on student identifiers from a CSV file.
@@ -89,16 +89,13 @@ def filesorter(
         input folder.
     """
     student_df = pd.read_csv(student_list)
+    print(student_df.head())
 
     missing_students = []
     for row in student_df.iterrows():
         # Create output folder
-        output_folder = [row[1].iloc[x] + "_" for x in sort_cols]
-        if output_dir:
-            output_folder = output_dir / "/".join(output_folder)
-        else:
-            output_folder = input_folder / "/".join(output_folder)
-
+        output_folder = [str(row[1].iloc[x]) for x in sort_cols]
+        output_folder = output_dir / "/".join(output_folder)
         output_folder.mkdir(exist_ok=True)
 
         # Find files that match
@@ -110,8 +107,8 @@ def filesorter(
 
         for file in matches:
             if move:
-                shutil.move(output_folder / file)
+                shutil.move(input_folder / file, output_folder / file)
             else:
-                shutil.copy(output_folder / file)
+                shutil.copyfile(input_folder / file, output_folder / file)
 
-        return missing_students
+    return missing_students

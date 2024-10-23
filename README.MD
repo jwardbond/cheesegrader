@@ -7,8 +7,8 @@
   - [Examples](#examples)
     - [Downloading student lists](#downloading-student-lists)
     - [Uploading grades](#uploading-grades)
-    - [Generating Rubrics (and other files)](#generating-rubrics-and-other-files)
-    - [Downloading Assignments from Quercus](#downloading-assignments-from-quercus)
+    - [Generating Copies (and other files)](#generating-copies-and-other-files)
+    - [Sorting Files](#sorting-files)
 
 ## Setting up Cheesegrader
 <a name="setup"></a>
@@ -28,8 +28,10 @@ Cheesegrader uses a `config.yml` file to control everything.  An example config 
         token: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
 
         # The course id, which you can obtain from the quercus url e.g. https://q.utoronto.ca/courses/[>= 6-digit number]
-        course_id: 0
+        course_id: 0123456
 ~~~
+
+Every command requires you to fill out some associated info in `config.yml`. Refer to the sections below, and to the information given in `sample_config.yml`
 
 >[!IMPORTANT]
 > You can get your API authorization token by following the instructions here: https://canvas.instructure.com/doc/api/file.oauth.html#manual-token-generation. Which basically tells you to go to `quercus > account > settings > approved integrations`   
@@ -38,13 +40,9 @@ Cheesegrader uses a `config.yml` file to control everything.  An example config 
 ### Downloading student lists
 <a name="s"></a>
 Cheesegrader can be used to generate student lists that include internal quercus ids, as well as utorids. This is useful when downloading assignments off of quercus. To use:
-1. Add the following line to your `config.yml` file:
-    
-    ~~~yaml
-        output_dir: "path"
-    ~~~
+1. Fill out the `api > students` section in `config.yml`
 
-2. Run `python cheesegrader -s`
+2. Run `python cheesegrader.py -s`
 
 ### Uploading grades
 <a name="u"></a>
@@ -55,32 +53,35 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
      >[!IMPORTANT] Team assignments
      > Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
      >
-     > For team assignments, replace `UTORID` with `TEAMID` (from quercus) in the rubric filenames.
+     > For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
 2. Prepare a file with the grades.
    - The file must be a `.csv`
    - The first line of the file must have the header `id, grade`
    - Each line must contain `[id], [grade]`
-3. Add the following to your `config.yml` file:
-    ~~~yaml
-        api:
-            token: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%"
-            course_id: 0
-            upload:
-                # The course id: you can obtain from the url: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
-                assignment_id: 0
+3. Fill out the `api > upload` section of config.yml`
 
-                # Absolute path to the CSV file with the grades. 
-                grade_file_path: "path/filename.csv"
+4. Run `python cheesegrader.py -u` and follow the prompts
 
-                # OPTIONAL list of folders for containing additional grading files for upload (e.g. rubrics, marked-up assignments)
-                # Files within these folders must have names starting with UTORid
-                additional_upload_paths: ["path_to_folder_1", "path_to_folder_2"]
-    ~~~
+### Generating Copies (and other files)
+<a name="cr"></a>
 
-4. Run `python cheesegrader -u` and follow the prompts
+Cheesegrader can be used generate copies of a single file for every student in a course. This is useful when you want to generate (e.g.) rubrics. To do this:
 
-### Generating Rubrics (and other files)
+1. Fill out the `file_utils > copying` section of `config.yml`
+2. Run `python cheesegrader.py -cr`
 
+    >[!IMPORTANT] name_cols
+    > The file you copy will have additional names prepended to it, e.g. "rubric.pdf" becomes "129039_jesse_rubric.pdf". Use name_cols to indicate which columns in your student list contain the information you want to add. 
 
-### Downloading Assignments from Quercus
-tbd
+### Sorting Files
+<a name="o"></a>
+
+Cheesegrader can be used to sort class files into folders. This is useful when (e.g.) you have just created a bunch of rubrics or downloaded a bunch of assignments, and want to sort them by assigned marker. To do this:
+
+1. Fill out the `file_utils > sorting` section of `config.yml`
+2. Run `python cheesegrader.py -o`
+   
+     >[!IMPORTANT] sort_cols
+     > This program will automatically create subfolders in your specified `output_dir`. If you want to have more than one level of subfolders (e.g. one folder per TA, followed by one folder for each section that TA is marking) specify the additional levels using `sort_cols`. 
+     >
+     >This creates the folder hierarchy left-to-right through the list. For instance `sort_cols:[4,0]` would first create one folder for whatever is in column 0 of your student list, and then create *sub* folders using whatever is in column 4.

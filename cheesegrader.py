@@ -6,6 +6,9 @@ import yaml
 
 from src import QuercusCourse, copy_rename, filesorter
 
+# TODO need to handle missing students better
+# TODO need to add option to bulk rename files
+# TODO extend api functionality to download assignments
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -38,8 +41,6 @@ if __name__ == "__main__":
         action="store_true",
         help="Sort named files by grader or section",
     )
-
-    # parser.add_argument("confpath", type=str, help="Path to config file")
 
     args = parser.parse_args()
 
@@ -85,10 +86,7 @@ if __name__ == "__main__":
         # Get relevant data from config
         student_list = Path(conf["file_utils"]["student_list"])
         input_filepath = Path(conf["file_utils"]["copying"]["input_filepath"])
-        if conf["file_utils"]["copying"]["output_dir"]:
-            output_dir = Path(conf["file_utils"]["copying"]["output_dir"])
-        else:
-            output_dir = None
+        output_dir = Path(conf["file_utils"]["copying"]["output_dir"])
 
         name_cols = conf["file_utils"]["copying"]["name_cols"]
 
@@ -98,9 +96,13 @@ if __name__ == "__main__":
     elif args.sort:
         student_list = Path(conf["file_utils"]["student_list"])
         input_folder = Path(conf["file_utils"]["sorting"]["input_folder"])
-        sort_cols = conf["file_utils"]["sorting"]["input_folder"]
-        # output_dir =
-        # move =
+        output_dir = Path(conf["file_utils"]["copying"]["output_dir"])
+
+        sort_cols = conf["file_utils"]["sorting"]["sort_cols"]
+        move = conf["file_utils"]["sorting"]["move"]
+        id_col = conf["file_utils"]["sorting"]["id_col"]
+
+        filesorter(student_list, input_folder, sort_cols, output_dir, move, id_col)
 
     else:
         raise ValueError("Bad option")  # TODO takeout, probably don't need.
