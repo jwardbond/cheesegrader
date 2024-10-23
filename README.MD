@@ -50,20 +50,23 @@ Cheesegrader can be used to generate student lists that include internal quercus
 Cheesegrader can be used to upload grades and other marking documents (rubrics, mark-ups) for a given assignment. This can be done on a per-group or per-student basis. To use:
 
 1. Prepare all rubrics in a single folder location. All rubrics must be named in a `UTORid_filename.pdf` format.
-   
-  >[!IMPORTANT] Team assignments
-  > Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
-  >
-  > For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
-1. Prepare a file with the grades.
+
+2. Prepare a file with the grades.
    - The file must be a `.csv`
    - The first line of the file must have the header `id, grade`
    - Each line must contain `[id], [grade]`
-2. Fill out the `api > upload` section of config.yml`
-    > [!IMPORTANT] Uploading files
-    > You can use `additional_upload_paths` in `config.yml` to include folders containing files you want to upload. This is useful when you have (e.g.) rubrics or marked-up assignments that you want to hand back. The files in these folders must have the `UTORid` (or `TEAMid`) somewhere in their name.
+3. Fill out the `api > upload` section of config.yml`
 
-3. Run `python cheesegrader.py -u` and follow the prompts
+
+4. Run `python cheesegrader.py -u` and follow the prompts
+
+>[!NOTE] Team assignments
+> Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
+>
+> For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
+
+> [!NOTE] Uploading files
+> You can use `additional_upload_paths` in `config.yml` to include folders containing files you want to upload. This is useful when you have (e.g.) rubrics or marked-up assignments that you want to hand back. The files in these folders must have the `UTORid` (or `TEAMid`) somewhere in their name.
 
 ### Generating Copies (and other files)
 <a name="cr"></a>
@@ -73,8 +76,8 @@ Cheesegrader can be used generate copies of a single file for every student in a
 1. Fill out the `file_utils > copying` section of `config.yml`
 2. Run `python cheesegrader.py -cr`
 
-    >[!IMPORTANT] name_cols
-    > The file you copy will have additional names prepended to it, e.g. "rubric.pdf" becomes "129039_jesse_rubric.pdf". Use name_cols to indicate which columns in your student list contain the information you want to add. 
+>[!NOTE] name_cols
+> The file you copy will have additional names prepended to it, e.g. "rubric.pdf" becomes "129039_jesse_rubric.pdf". Use name_cols to indicate which columns in your student list contain the information you want to add. 
 
 ### Sorting Files
 <a name="o"></a>
@@ -84,7 +87,7 @@ Cheesegrader can be used to sort class files into folders. This is useful when (
 1. Fill out the `file_utils > sorting` section of `config.yml`
 2. Run `python cheesegrader.py -o`
    
-     >[!IMPORTANT] sort_cols
-     > This program will automatically create subfolders in your specified `output_dir`. If you want to have more than one level of subfolders (e.g. one folder per TA, followed by one folder for each section that TA is marking) specify the additional levels using `sort_cols`. 
-     >
-     >This creates the folder hierarchy left-to-right through the list. For instance `sort_cols:[4,0]` would first create one folder for whatever is in column 0 of your student list, and then create *sub* folders using whatever is in column 4.
+>[!NOTE] sort_cols
+> This program will automatically create subfolders in your specified `output_dir`. If you want to have more than one level of subfolders (e.g. one folder per TA, followed by one folder for each section that TA is marking) specify the additional levels using `sort_cols`. 
+>
+>This creates the folder hierarchy left-to-right through the list. For instance `sort_cols:[4,0]` would first create one folder for whatever is in column 0 of your student list, and then create *sub* folders using whatever is in column 4.
