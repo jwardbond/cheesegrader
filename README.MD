@@ -7,8 +7,8 @@ Cheesegrader is a set of grading tools I use to make my life easier. You can do 
   - [Config](#config)
   - [Examples](#examples)
     - [Downloading student lists](#downloading-student-lists)
-    - [Uploading grades](#uploading-grades)
-    - [Generating copies (and other files)](#generating-copies-and-other-files)
+    - [Uploading grades and files](#uploading-grades-and-files)
+    - [Generating copies of files (and other files)](#generating-copies-of-files-and-other-files)
     - [Sorting files](#sorting-files)
   - [Contact](#contact)
 
@@ -46,7 +46,7 @@ Cheesegrader can be used to generate student lists that include internal quercus
 
 2. Run `python cheesegrader.py -s`
 
-### Uploading grades
+### Uploading grades and files
 <a name="u"></a>
 
 Cheesegrader can be used to upload grades and other marking documents (rubrics, mark-ups) for a given assignment. This can be done on a per-group or per-student basis. To use:
@@ -66,7 +66,7 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
 > [!NOTE]
 > Uploading files
 > 
-> You can use `additional_upload_paths` in `config.yml` to include folders containing files you want to upload. This is useful when you have (e.g.) rubrics or marked-up assignments that you want to hand back. The files in these folders must have the `UTORid` (or `TEAMid`) somewhere in their name.
+> You can use `additional_upload_paths` in `config.yml` to include folders containing files you want to upload. This is useful when you have (e.g.) rubrics or marked-up assignments that you want to hand back. The files in these folders must have the `UTORid` (or `TEAMid`) somewhere in their name. *This program searches specified folders recursively*.
 
 >[!NOTE]
 > Team assignments
@@ -75,7 +75,7 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
 >
 > For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
 
-### Generating copies (and other files)
+### Generating copies of files (and other files)
 <a name="cr"></a>
 
 Cheesegrader can be used generate copies of a single file for every student in a course. This is useful when you want to generate (e.g.) rubrics. To do this:
