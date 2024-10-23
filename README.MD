@@ -54,7 +54,7 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
     > Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
     >
     > For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
-    
+
 2. Prepare a file with the grades.
    - The file must be a `.csv`
    - The first line of the file must have the header `id, grade`
@@ -88,7 +88,7 @@ Cheesegrader can be used to sort class files into folders. This is useful when (
 1. Fill out the `file_utils > sorting` section of `config.yml`
 2. Run `python cheesegrader.py -o`
    
->[!NOTE] sort_cols
+>[!NOTE]
 > This program will automatically create subfolders in your specified `output_dir`. If you want to have more than one level of subfolders (e.g. one folder per TA, followed by one folder for each section that TA is marking) specify the additional levels using `sort_cols`. 
 >
 >This creates the folder hierarchy left-to-right through the list. For instance `sort_cols:[4,0]` would first create one folder for whatever is in column 0 of your student list, and then create *sub* folders using whatever is in column 4.
