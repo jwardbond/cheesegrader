@@ -7,8 +7,8 @@
   - [Examples](#examples)
     - [Downloading student lists](#downloading-student-lists)
     - [Uploading grades](#uploading-grades)
-    - [Generating Copies (and other files)](#generating-copies-and-other-files)
-    - [Sorting Files](#sorting-files)
+    - [Generating copies (and other files)](#generating-copies-and-other-files)
+    - [Sorting files](#sorting-files)
 
 ## Setting up Cheesegrader
 <a name="setup"></a>
@@ -73,7 +73,7 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
 >
 > For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
 
-### Generating Copies (and other files)
+### Generating copies (and other files)
 <a name="cr"></a>
 
 Cheesegrader can be used generate copies of a single file for every student in a course. This is useful when you want to generate (e.g.) rubrics. To do this:
@@ -86,7 +86,7 @@ Cheesegrader can be used generate copies of a single file for every student in a
 > 
 > The file you copy will have additional names prepended to it, e.g. "rubric.pdf" becomes "129039_jesse_rubric.pdf". Use `name_cols` to indicate which columns in your student list contain the information you want to add. 
 
-### Sorting Files
+### Sorting files
 <a name="o"></a>
 
 Cheesegrader can be used to sort class files into folders. This is useful when (e.g.) you have just created a bunch of rubrics or downloaded a bunch of assignments, and want to sort them by assigned marker. To do this:
