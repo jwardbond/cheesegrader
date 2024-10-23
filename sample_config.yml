@@ -1,4 +1,4 @@
-sapi:
+api:
   # Your Canvas API key, from https://canvas.instructure.com/doc/api/file.oauth.html#manual-token-generation. See README for more
   auth_key: "somerandomstringthatisreallylongandfullofnumberslike123123121809132andsymbols$%#$%#$%" 
   course_id: 123456 # Quercus course id, obtained from https://q.utoronto.ca/courses/[>= 6-digit number]
