@@ -101,5 +101,10 @@ Cheesegrader can be used to sort class files into folders. This is useful when (
 >
 >This creates the folder hierarchy left-to-right through the list. For instance `sort_cols:[4,0]` would first create one folder for whatever is in column 0 of your student list, and then create *sub* folders using whatever is in column 4.
 
+## Upcoming features
+- Downloading assignments
+- Better handling of missing students/files w. logging
+- An API for use in a jupyter notebook
+
 ## Contact
 This is very much in beta. If you need some help please reach out to me at jesse.wardbond at mail.utoronto.ca
