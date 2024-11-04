@@ -95,7 +95,11 @@ class QuercusCourse(object):
 
     # TODO handle when assignment is not found in course
     def upload_grades(
-        self, assignment_id: int, grade_file_path: pathlib.Path, file_paths=[]
+        self,
+        assignment_id: int,
+        grade_file_path: pathlib.Path,
+        files_only: bool,
+        file_paths=[],
     ):
         """# TODO"""
         assignment = QuercusAssignment(self.course_id, assignment_id, self.token)
@@ -125,7 +129,8 @@ class QuercusCourse(object):
                     grade = student["grade"]
 
                     # post grade
-                    assignment.post_grade(id, grade)
+                    if not files_only:
+                        assignment.post_grade(id, grade)
 
                     # upload files
                     if file_paths:
@@ -136,7 +141,8 @@ class QuercusCourse(object):
                         )
                         if status == 0:
                             missing_files.append([name, folder])
-        print(missing_files)
+        for missing in missing_files:
+            print(missing)
 
     # Get the course title based on the course id
     def get_course_title(self):

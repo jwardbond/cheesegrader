@@ -4,9 +4,10 @@ api:
   course_id: 123456 # Quercus course id, obtained from https://q.utoronto.ca/courses/[>= 6-digit number]
   students:
     output_dir: "/path/" # The folder you want to output the list to
-  uploading:
+  upload:
     assignment_id: 1353113                          # The assigment id, obtained from: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
-    grade_filepath: "/path/filename.csv"           # Absolute path to grade file. The README has more details on how to format this file
+    grade_filepath: "/path/filename.csv"            # Absolute path to grade file. The README has more details on how to format this file
+    files_only: False                                # True you only want to upload a file (no grades)
     additional_upload_paths: ["/path1/", "/path2"]  # A list of folders containing other files you want to upload (e.g. rubrics). See README for more. 
 file_utils:
   student_list: "/path/filename.csv" # Absolute path to student list.
