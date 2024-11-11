@@ -177,9 +177,9 @@ class QuercusAssignment(object):
 
             try:
                 file_path = (
-                    glob(f"{base}/**/{user_id}*.pdf", recursive=True)[0]
+                    glob(f"{base}/**/{user_id}*", recursive=True)[0]
                     if group_id is None
-                    else glob(f"{base}/**/{group_id}*.pdf", recursive=True)[0]
+                    else glob(f"{base}/**/{group_id}*", recursive=True)[0]
                 )
             except IndexError:
                 return 0, user_id, base
