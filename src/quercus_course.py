@@ -98,7 +98,7 @@ class QuercusCourse(object):
         self,
         assignment_id: int,
         grade_file_path: pathlib.Path,
-        files_only: bool,
+        mode: int = 0,
         file_paths=[],
     ):
         """# TODO"""
@@ -128,12 +128,9 @@ class QuercusCourse(object):
                     id = student["id"]
                     grade = student["grade"]
 
-                    # post grade
-                    if not files_only:
+                    # Post grades and file
+                    if  mode ==0: #Upload grade and files
                         assignment.post_grade(id, grade)
-
-                    # upload files
-                    if file_paths:
                         status, name, folder = (
                             assignment.upload(id, file_paths, student["group_id"])
                             if assignment.is_group()
@@ -141,6 +138,19 @@ class QuercusCourse(object):
                         )
                         if status == 0:
                             missing_files.append([name, folder])
+                    
+                    elif mode==1: #Upload grades only
+                        assignment.post_grade(id, grade)
+                    
+                    elif mode==2: #Upload files only
+                        status, name, folder = (
+                            assignment.upload(id, file_paths, student["group_id"])
+                            if assignment.is_group()
+                            else assignment.upload(id, file_paths)
+                        )
+                        if status == 0:
+                            missing_files.append([name, folder])
+
         for missing in missing_files:
             print(missing)
 

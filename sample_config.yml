@@ -7,7 +7,7 @@ api:
   upload:
     assignment_id: 1353113                          # The assigment id, obtained from: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
     grade_filepath: "/path/filename.csv"            # Absolute path to grade file. The README has more details on how to format this file
-    files_only: False                                # True you only want to upload a file (no grades)
+    mode: 2                                         # 0: files and grades, 1: grades only, 2: files only
     additional_upload_paths: ["/path1/", "/path2"]  # A list of folders containing other files you want to upload (e.g. rubrics). See README for more. 
 file_utils:
   student_list: "/path/filename.csv" # Absolute path to student list.
@@ -20,4 +20,4 @@ file_utils:
     sort_cols: []           # Columns in student list to use when sorting files. E.g. [0]
     output_dir: "/path/"    # Path to the parent directory in which your want to store sorted files/folders
     move: True              # True if you want to move the files, False if you want to copy them
-    id_col: 0               # Column in student list used to identify files (filename should contain this info and it should be unique)
+    id_col: 0               # Column in student list used to identify files (filename should contain this info and it should be unique)W

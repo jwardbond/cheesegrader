@@ -61,14 +61,14 @@ if __name__ == "__main__":
             Path(f) for f in conf["api"]["upload"]["additional_upload_paths"]
         ]
 
-        files_only = conf["api"]["upload"]["files_only"]
+        mode = conf["api"]["upload"]["mode"]
 
         # Upload
         course = QuercusCourse(course_id, auth_key)
         course.upload_grades(
             assignment_id,
             grade_filepath,
-            files_only,
+            mode,
             folder_paths,
         )
 
