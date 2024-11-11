@@ -10,6 +10,7 @@ Cheesegrader is a set of grading tools I use to make my life easier. You can do 
     - [Uploading grades and files](#uploading-grades-and-files)
     - [Generating copies of files (and other files)](#generating-copies-of-files-and-other-files)
     - [Sorting files](#sorting-files)
+  - [Upcoming features](#upcoming-features)
   - [Contact](#contact)
 
 ## Setting up Cheesegrader
@@ -71,9 +72,10 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
 >[!NOTE]
 > Team assignments
 >
-> Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade. 
+> Team assignments are not handled correctly. This is on my todo list
+> ~~Team assignments are automatically detected by the program. These scripts only handle the case where everyone on the team gets the same grade.~~
 >
-> For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.
+> ~~For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.~~
 
 ### Generating copies of files (and other files)
 <a name="cr"></a>
@@ -103,7 +105,9 @@ Cheesegrader can be used to sort class files into folders. This is useful when (
 
 ## Upcoming features
 - Downloading assignments
+- Detecting/Deleting uploaded files
 - Better handling of missing students/files w. logging
+- Team assignment handling
 - An API for use in a jupyter notebook
 
 ## Contact
