@@ -1,6 +1,5 @@
-import glob
-import shutil
 import pathlib
+import shutil
 
 import pandas as pd
 
@@ -8,9 +7,9 @@ import pandas as pd
 def copy_rename(
     student_list: pathlib.Path,
     input_filepath: pathlib.Path,
-    output_dir: pathlib.Path = None,
-    name_cols=[],
-):
+    output_dir: pathlib.Path | None = None,
+    name_cols: list[int] | None = None,
+) -> None:
     """Copies a file and renames it according to user-specified columns in a class .csv file.
 
     This function reads a CSV file containing student information, and for each student,
@@ -28,7 +27,6 @@ def copy_rename(
     Raises:
         FileNotFoundError: #TODO
     """
-
     student_df = pd.read_csv(student_list)
 
     # Get base filename
@@ -64,9 +62,8 @@ def filesorter(
     output_dir: pathlib.Path,
     move: bool,
     id_col: int,
-):
-    """
-    Sorts files into folders based on student identifiers from a CSV file.
+) -> list[str]:
+    """Sorts files into folders based on student identifiers from a CSV file.
 
     Reads a list of students from a CSV file and searches for files in the specified
     input folder that match the identifiers of each student. Files are organized into
@@ -85,11 +82,10 @@ def filesorter(
             to 0 (leftmost column).
 
     Returns:
-        list: A list of student identifiers for which no matching files were found in the
-        input folder.
+        missing_students: A list of student identifiers for which no matching files were found in the
+            input folder.
     """
     student_df = pd.read_csv(student_list)
-    print(student_df.head())
 
     missing_students = []
     for row in student_df.iterrows():
@@ -99,11 +95,11 @@ def filesorter(
         output_folder.mkdir(exist_ok=True)
 
         # Find files that match
-        id = row[1].iloc[id_col]
-        matches = glob.glob(f"*{id}*", root_dir=input_folder)
+        idx = row[1].iloc[id_col]
+        matches = input_folder.glob(f"*{idx}*")
 
         if not matches:
-            missing_students.append(id)
+            missing_students.append(idx)
 
         for file in matches:
             if move:

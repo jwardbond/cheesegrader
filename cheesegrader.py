@@ -1,4 +1,3 @@
-import os
 import argparse
 from pathlib import Path
 
@@ -12,7 +11,7 @@ from src import QuercusCourse, copy_rename, filesorter
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Run the various grading scripts available."
+        description="Run the various grading scripts available.",
     )
 
     # Flags for different grading tools
@@ -108,4 +107,5 @@ if __name__ == "__main__":
         filesorter(student_list, input_folder, sort_cols, output_dir, move, id_col)
 
     else:
-        raise ValueError("Bad option")  # TODO takeout, probably don't need.
+        msg = "Bad option"
+        raise ValueError(msg)  # TODO takeout, probably don't need.
