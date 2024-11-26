@@ -14,7 +14,7 @@ file_utils:
   copying:
     input_filepath: "/path/filename.csv"  # Absolute path to input file.
     output_dir: "/path/"                  # Absolute path to output folder
-    name_cols: []                         # Columns in student list to use for filenames. E.g [0,1]
+    name_cols: []                         # Columns in student list to prepend on filenames. E.g [0,1]
   sorting:
     input_dir: "/path/"     # Path to the directory containing files to sort
     sort_cols: []           # Columns in student list to use when sorting files. E.g. [0]
