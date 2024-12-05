@@ -5,7 +5,7 @@ api:
   students:
     output_dir: "/path/" # The folder you want to output the list to
   upload:
-    assignment_id: 1353113                          # The assigment id, obtained from: https://q.utoronto.ca/courses/[course_id]/assignments/[>= 6-digit number]
+    assignment_id: 1353113                          # The assigment id, obtained from: https://q.utoronto.ca/courses/[course_id]/assignments/[6-digit number]
     grade_filepath: "/path/filename.csv"            # Absolute path to grade file. The README has more details on how to format this file
     mode: 2                                         # 0: files and grades, 1: grades only, 2: files only
     additional_upload_paths: ["/path1/", "/path2"]  # A list of folders containing other files you want to upload (e.g. rubrics). See README for more. 

@@ -56,15 +56,13 @@ if __name__ == "__main__":
         assignment_id = conf["api"]["upload"]["assignment_id"]
 
         grade_filepath = Path(conf["api"]["upload"]["grade_filepath"])
-        folder_paths = [
-            Path(f) for f in conf["api"]["upload"]["additional_upload_paths"]
-        ]
+        folder_paths = [Path(f) for f in conf["api"]["upload"]["additional_upload_paths"]]
 
         mode = conf["api"]["upload"]["mode"]
 
         # Upload
         course = QuercusCourse(course_id, auth_key)
-        course.upload_grades(
+        course.upload(
             assignment_id,
             grade_filepath,
             mode,

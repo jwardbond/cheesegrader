@@ -1,23 +1,22 @@
 import pathlib
-from glob import glob
 
-from click import prompt
-import requests as r
 import pandas as pd
+import requests as r
+from click import prompt
 
 from .quercus_assignment import QuercusAssignment
 
 
 class QuercusCourse(object):
-    """A course object for interacting with Quercus through Canvas APIs
+    """A course object for interacting with Quercus through Canvas APIs.
 
     This class provides methods for accessing course details, student lists, and student submissions for courses at UofT, and provides methods for uploading grades/rubrics.
 
     Most of this code has been adapted from # TODO I forgot where I got it lol
 
     Attributes:
+        course_id (str, int): The course number on Quercus
         auth_key (str): The authentication token for Canvas APIs. See ReadMe for more details.
-        course_id (str): The course number on Quercus
         endpoints (dict): A collection of API endpoint URLs related to the course.
         course (dict): The course information fetched from the API.
         students (dict): A dictionary of records for students enrolled in the course
@@ -30,7 +29,7 @@ class QuercusCourse(object):
 
     """
 
-    def __init__(self, course_id, auth_key) -> None:
+    def __init__(self, course_id: str | int, auth_key: str) -> None:
         self.token = auth_key
         self.auth_key = {"Authorization": f"Bearer {auth_key}"}
         self.course_id = course_id
@@ -56,8 +55,8 @@ class QuercusCourse(object):
 
         return response.json()
 
-    def generate_student_dataframe(self):
-        """Generates a dataframe of student information for the course
+    def generate_student_dataframe(self) -> pd.DataFrame:
+        """Generates a dataframe of student information for the course.
 
         Returns:
             pd.DataFrame: A dataframe with the following columns
@@ -80,39 +79,40 @@ class QuercusCourse(object):
             ],
         ]
 
-        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(
-            lambda s: s.split(", ")[1]
-        )
-        cleaned_df["lname"] = cleaned_df["sortable_name"].apply(
-            lambda s: s.split(", ")[0]
-        )
+        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[1])
+        cleaned_df["lname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[0])
 
-        print(
-            f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records"
-        )
+        print(f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records")
 
         return cleaned_df
 
-    # TODO handle when assignment is not found in course
-    def upload_grades(
+    def upload(
         self,
         assignment_id: int,
-        grade_file_path: pathlib.Path,
+        grade_filepath: pathlib.Path,
         mode: int = 0,
-        file_paths=[],
-    ):
+        upload_filepaths: list[pathlib.Path] | None = None,
+    ) -> None:
         """# TODO"""
+        if upload_filepaths is None:
+            upload_filepaths = []
+
         assignment = QuercusAssignment(self.course_id, assignment_id, self.token)
 
         print(
-            f"This will add grades and upload grades for {assignment.get_assignment_title()} in {self.get_course_title()}\n"
+            f"This will add grades and upload grades for {assignment.get_assignment_title()} in {self.get_course_title()}\n",
         )
 
-        if "Y" == prompt(
-            "Are you sure you want to proceed? (Y/N)", default="N", show_default=True
+        if (
+            prompt(
+                "Are you sure you want to proceed? (Y/N)",
+                default="N",
+                show_default=True,
+            )
+            == "Y"
         ):
             # Get grading file
-            grades_df = pd.read_csv(grade_file_path)
+            grades_df = pd.read_csv(grade_filepath)
 
             missing_files = []
             for row in grades_df.iterrows():
@@ -125,35 +125,47 @@ class QuercusCourse(object):
                     data.append(row[1])
 
                 for student in data:
-                    id = student["id"]
+                    idx = student["id"]
                     grade = student["grade"]
 
-                    # Post grades and file
-                    if  mode ==0: #Upload grade and files
-                        assignment.post_grade(id, grade)
-                        status, name, folder = (
-                            assignment.upload(id, file_paths, student["group_id"])
-                            if assignment.is_group()
-                            else assignment.upload(id, file_paths)
-                        )
-                        if status == 0:
-                            missing_files.append([name, folder])
-                    
-                    elif mode==1: #Upload grades only
-                        assignment.post_grade(id, grade)
-                    
-                    elif mode==2: #Upload files only
-                        status, name, folder = (
-                            assignment.upload(id, file_paths, student["group_id"])
-                            if assignment.is_group()
-                            else assignment.upload(id, file_paths)
-                        )
-                        if status == 0:
-                            missing_files.append([name, folder])
+                    # Upload files
+                    if mode in (0, 2):  # Upload files
+                        # Find files for given idx
+                        files = file_lookup(idx, upload_filepaths)
+
+                        if len(files) == 0:  # file missing
+                            missing_files.append(idx)
+                        else:  # upload files
+                            for f in files:
+                                assignment.upload(idx, f, student["group_id"]) if assignment.is_group() else assignment.upload(idx, f)
+
+                    # Upload grades
+                    if mode in (0, 1):  # Upload grades
+                        assignment.post_grade(idx, grade)
 
         for missing in missing_files:
             print(missing)
 
     # Get the course title based on the course id
-    def get_course_title(self):
+    def get_course_title(self) -> str:
         return self.course_info["name"]
+
+
+def file_lookup(idx: str, parent_paths: list[pathlib.Path]) -> list[pathlib.Path]:
+    """Given an id and a list of parent paths, returns a list of files that match the id.
+
+    Searches parent paths recursively.
+
+    Args:
+        idx (str): The id to search for in the file name
+        parent_paths (list[pathlib.Path]): A list of parent paths to search for the id
+
+    """
+    output = []
+    for path in parent_paths:
+        try:
+            matched_files = list(path.rglob(f"{idx}*"))
+            output = output + matched_files
+        except IndexError:
+            continue
+    return output

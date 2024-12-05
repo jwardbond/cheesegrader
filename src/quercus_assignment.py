@@ -1,4 +1,5 @@
 import os
+import pathlib
 from glob import glob
 
 import requests as r
@@ -37,10 +38,8 @@ class QuercusAssignment(object):
 
         self.endpoints = {
             "course": f"https://q.utoronto.ca/api/v1/courses/{course_id}/",
-            "assignment": f"https://q.utoronto.ca/api/v1/courses/{course_id}/"
-            f"assignments/{assignment_id}",
-            "submission": f"https://q.utoronto.ca/api/v1/courses/{course_id}/"
-            f"assignments/{assignment_id}/submissions/sis_user_id:",
+            "assignment": f"https://q.utoronto.ca/api/v1/courses/{course_id}/" f"assignments/{assignment_id}",
+            "submission": f"https://q.utoronto.ca/api/v1/courses/{course_id}/" f"assignments/{assignment_id}/submissions/sis_user_id:",
             "submission_comments_suffix": "/comments/files",
             "groups": "https://q.utoronto.ca/api/v1/group_categories/",
             "groups_suffix": "/groups",
@@ -60,11 +59,7 @@ class QuercusAssignment(object):
 
     def _get_groups(self):
         if self.is_group():
-            url = (
-                self.endpoints["groups"]
-                + str(self.assignment["group_category_id"])
-                + self.endpoints["groups_suffix"]
-            )
+            url = self.endpoints["groups"] + str(self.assignment["group_category_id"]) + self.endpoints["groups_suffix"]
 
             data = {"include": ["users"]}
             params = {"per_page": 200}
@@ -125,11 +120,7 @@ class QuercusAssignment(object):
             list: a list of dicts containing student grading information
         """
 
-        url = (
-            self.endpoints["group_users"]
-            + str(self.group_ids[group_info["id"]])
-            + self.endpoints["group_users_suffix"]
-        )
+        url = self.endpoints["group_users"] + str(self.group_ids[group_info["id"]]) + self.endpoints["group_users_suffix"]
 
         params = {"per_page": 20}
 
@@ -151,7 +142,7 @@ class QuercusAssignment(object):
         return parsed_data
 
     def post_grade(self, user_id, grade):
-        """Posts the grade for a given user
+        """Posts the grade for a given user.
 
         Args:
             user_id (int): Quercus sis_id for the user
@@ -162,68 +153,40 @@ class QuercusAssignment(object):
         grade_info = {"submission[posted_grade]": f"{grade:.1f}"}
         response = r.put(url, data=grade_info, headers=self.auth_key)
 
-    def upload(self, user_id: int, file_paths: list, group_id=None):
-        """Upload grading files (rubrics, mark-ups, etc.) for a given user.
-
-        This method searches a list of filepaths for files
+    def upload_file(self, user_id: int, filepath: pathlib.Path):
+        """Uploads a single file for a given user.
 
         Args:
             user_id (int): Quercus sis_id for the user
-            file_paths (list): A list of filepaths to search for relevant files
-            group_ (optional): The group id
+            filepaths (list): A list of filepaths to search for relevant files
         """
-        for base in file_paths:
-            # get the absolute file path based on weather it is a group or individual assignment
+        # based on this post: https://community.canvaslms.com/t5/Canvas-Developers-Group/API-Assignment-Comments-File-Upload/td-p/176229
+        url = self.endpoints["submission"] + f"{user_id}" + self.endpoints["submission_comments_suffix"]
 
-            try:
-                file_path = (
-                    glob(f"{base}/**/{user_id}*", recursive=True)[0]
-                    if group_id is None
-                    else glob(f"{base}/**/{group_id}*", recursive=True)[0]
-                )
-            except IndexError:
-                return 0, user_id, base
+        # Step 1: Get upload URL
+        name = filepath.name
+        size = filepath.stat().st_size
+        file_info = {
+            "name": name,
+            "size": size,
+            "content_type": "application/docx",
+        }
+        response = r.post(url, data=file_info, headers=self.auth_key)
 
-            # get the file name
-            file_name = file_path.split(f"{os.path.sep}")[-1]
+        # Step 2: Upload file
+        upload_url = response.json()["upload_url"]
+        upload_params = response.json()["upload_params"]
+        file_data = {"upload_file": filepath.open("rb")}
+        response = r.post(upload_url, files=file_data, data=upload_params)
 
-            # based on this post: https://community.canvaslms.com/t5/Canvas-Developers-Group/API-Assignment-Comments-File-Upload/td-p/176229
-            url = (
-                self.endpoints["submission"]
-                + f"{user_id}"
-                + self.endpoints["submission_comments_suffix"]
-            )
+        # Step 3: Link uploaded file id with comment
+        file_id = response.json()["id"]
 
-            # Step 1: Get upload URL
-            file_info = {
-                "name": f"{file_name}",
-                "size": os.path.getsize(f"{file_path}"),
-                "content_type": "application/docx",
-            }
+        comment_url = f"https://q.utoronto.ca/api/v1/courses/{self.course_id}/assignments/{self.assignment_id}/submissions/sis_user_id:{user_id}"
 
-            response = r.post(url, data=file_info, headers=self.auth_key)
+        comment_info = {
+            "comment[file_ids]": [file_id],
+            "comment[group_comment]": "true",
+        }
 
-            # Step 2: Upload file
-            upload_url = response.json()["upload_url"]
-            upload_params = response.json()["upload_params"]
-
-            file_data = {"upload_file": open(f"{file_path}", "rb")}
-
-            response = r.post(upload_url, files=file_data, data=upload_params)
-
-            # Step 3: Attach as comment
-            file_id = response.json()["id"]
-
-            comment_url = (
-                f"https://q.utoronto.ca/api/v1/courses/{self.course_id}/"
-                f"assignments/{self.assignment_id}/submissions/sis_user_id:{user_id}"
-            )
-
-            comment_info = {
-                "comment[file_ids]": [file_id],
-                "comment[group_comment]": "true",
-            }
-
-            response = r.put(comment_url, data=comment_info, headers=self.auth_key)
-
-            return 1, user_id, base
+        response = r.put(comment_url, data=comment_info, headers=self.auth_key)

@@ -8,6 +8,7 @@ Cheesegrader is a set of grading tools I use to make my life easier. You can do 
   - [Examples](#examples)
     - [Downloading student lists](#downloading-student-lists)
     - [Uploading grades and files](#uploading-grades-and-files)
+    - [Copyrename: Generating copies of files](#copyrename-generating-copies-of-files)
     - [Sorting files](#sorting-files)
   - [Upcoming features](#upcoming-features)
   - [Contact](#contact)
@@ -76,7 +77,7 @@ Cheesegrader can be used to upload grades and other marking documents (rubrics, 
 >
 > ~~For team assignments, replace `UTORid` with `TEAMid` (from quercus) in the rubric filenames.~~
 
-r### Copyrename: Generating copies of files
+### Copyrename: Generating copies of files
 <a name="cr"></a>
 
 Cheesegrader can be used generate copies of a single file for every student in a course. This is useful when you want to generate (e.g.) rubrics. To do this:
