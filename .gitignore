@@ -1,6 +1,9 @@
 # Secrets
 config.yml
 
+#llm
+.qodo/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

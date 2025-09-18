@@ -38,8 +38,8 @@ class QuercusAssignment(object):
 
         self.endpoints = {
             "course": f"https://q.utoronto.ca/api/v1/courses/{course_id}/",
-            "assignment": f"https://q.utoronto.ca/api/v1/courses/{course_id}/" f"assignments/{assignment_id}",
-            "submission": f"https://q.utoronto.ca/api/v1/courses/{course_id}/" f"assignments/{assignment_id}/submissions/sis_user_id:",
+            "assignment": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}",
+            "submission": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}/submissions/sis_user_id:",
             "submission_comments_suffix": "/comments/files",
             "groups": "https://q.utoronto.ca/api/v1/group_categories/",
             "groups_suffix": "/groups",
@@ -111,7 +111,7 @@ class QuercusAssignment(object):
         return self.assignment["group_category_id"] is not None
 
     def group_data_parser(self, group_info):
-        """Given group info (id, grade), returns individual student info (id, group grade)
+        """Given group info (id, grade), returns individual student info (id, group grade).
 
         Args:
             group_info: todo

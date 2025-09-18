@@ -94,6 +94,7 @@ class QuercusCourse(object):
         upload_filepaths: list[pathlib.Path] | None = None,
     ) -> None:
         """# TODO"""
+        # TODO add NAN test for uploads incase there are a lot of extra rows in the csv
         if upload_filepaths is None:
             upload_filepaths = []
 
@@ -116,7 +117,7 @@ class QuercusCourse(object):
 
             missing_files = []
             for row in grades_df.iterrows():
-                print(f'{row[1]["id"]} \t {row[1]["grade"]}')
+                print(f"{row[1]['id']} \t {row[1]['grade']}")
                 data = []
 
                 if assignment.is_group():
@@ -137,7 +138,7 @@ class QuercusCourse(object):
                             missing_files.append(idx)
                         else:  # upload files
                             for f in files:
-                                assignment.upload(idx, f, student["group_id"]) if assignment.is_group() else assignment.upload(idx, f)
+                                assignment.upload_file(idx, f, student["group_id"]) if assignment.is_group() else assignment.upload_file(idx, f)
 
                     # Upload grades
                     if mode in (0, 1):  # Upload grades

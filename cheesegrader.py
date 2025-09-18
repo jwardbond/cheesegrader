@@ -73,11 +73,10 @@ if __name__ == "__main__":
         # Get relevant data from config
         course_id = conf["api"]["course_id"]
         auth_key = conf["api"]["auth_key"]
-        output_dir = Path(conf["api"]["students"]["output_dir"])
+        output_filepath = Path(conf["file_utils"]["student_list"])
 
         # Download student list
         course = QuercusCourse(course_id, auth_key)
-        output_filepath = output_dir / f"{course_id}_stusdent_list.csv"
         course.generate_student_dataframe().to_csv(output_filepath, index=False)
 
         print(f"Generated student list at {output_filepath}")
