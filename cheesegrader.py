@@ -73,7 +73,7 @@ if __name__ == "__main__":
         # Get relevant data from config
         course_id = conf["api"]["course_id"]
         auth_key = conf["api"]["auth_key"]
-        output_filepath = Path(conf["file_utils"]["student_list"])
+        output_filepath = Path(conf["api"]["students"]["output_dir"]) / f"{course_id}_students.csv"
 
         # Download student list
         course = QuercusCourse(course_id, auth_key)
