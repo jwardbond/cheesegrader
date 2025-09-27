@@ -94,8 +94,8 @@ if __name__ == "__main__":
 
     elif args.sort:
         student_list = Path(conf["file_utils"]["student_list"])
-        input_folder = Path(conf["file_utils"]["sorting"]["input_folder"])
-        output_dir = Path(conf["file_utils"]["copying"]["output_dir"])
+        input_folder = Path(conf["file_utils"]["sorting"]["input_dir"])
+        output_dir = Path(conf["file_utils"]["sorting"]["output_dir"])
 
         sort_cols = conf["file_utils"]["sorting"]["sort_cols"]
         move = conf["file_utils"]["sorting"]["move"]

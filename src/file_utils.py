@@ -57,7 +57,7 @@ def copy_rename(
 
 def filesorter(
     student_list: pathlib.Path,
-    input_folder: pathlib.Path,
+    input_dir: pathlib.Path,
     sort_cols: list,
     output_dir: pathlib.Path,
     move: bool,
@@ -92,19 +92,20 @@ def filesorter(
         # Create output folder
         output_folder = [str(row[1].iloc[x]) for x in sort_cols]
         output_folder = output_dir / "/".join(output_folder)
-        output_folder.mkdir(exist_ok=True)
+        output_folder.mkdir(exist_ok=True, parents=True)
 
         # Find files that match
         idx = row[1].iloc[id_col]
-        matches = input_folder.glob(f"*{idx}*")
+        matches = input_dir.glob(f"*{idx}*")
+        print(idx, list(matches))
 
         if not matches:
             missing_students.append(idx)
 
         for file in matches:
             if move:
-                shutil.move(input_folder / file, output_folder / file)
+                shutil.move(input_dir / file, output_folder / file)
             else:
-                shutil.copyfile(input_folder / file, output_folder / file)
+                shutil.copyfile(input_dir / file, output_folder / file)
 
     return missing_students
