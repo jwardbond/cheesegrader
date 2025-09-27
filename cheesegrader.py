@@ -97,7 +97,7 @@ if __name__ == "__main__":
         input_folder = Path(conf["file_utils"]["sorting"]["input_dir"])
         output_dir = Path(conf["file_utils"]["sorting"]["output_dir"])
 
-        sort_cols = conf["file_utils"]["sorting"]["sort_cols"]
+        sort_cols = conf["file_utils"]["sorting"]["subfolder_cols"]
         move = conf["file_utils"]["sorting"]["move"]
         id_col = conf["file_utils"]["sorting"]["id_col"]
 
