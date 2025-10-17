@@ -4,6 +4,9 @@ config.yml
 #llm
 .qodo/
 
+# old code
+.archive/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
