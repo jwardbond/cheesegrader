@@ -4,12 +4,13 @@ This module provides the QuercusAssignment class for interacting with the
 Canvas/Quercus LMS API, specifically for managing assignments, submissions,
 grades, and file uploads.
 
-Classes:
-    QuercusAssignment: The primary client class for assignment management.
-
-TODO:
+TODO list:
     * Implement batch submission/grade updates.
     * Implement deletion of submission comments.
+    * Handle group assigments.
+
+Classes:
+    QuercusAssignment: The primary client class for assignment management.
 
 :copyright: (c) 2025 by Jesse Ward-Bond.
 :license: MIT, see LICENSE for more details.
@@ -39,7 +40,7 @@ class QuercusAssignment:
         Args:
             course_id (int): The course ID number on Quercus.
             assignment_id (int): The assignment ID number on Quercus.
-            auth_key (str): The raw authentication token (string). Details about this are in the README.
+            token (str): The raw authentication token (string). Details about this are in the README.
         """
         self.course_id = course_id
         self.assignment_id = assignment_id
@@ -57,7 +58,7 @@ class QuercusAssignment:
 
         # Fetch assignment info
         self.assignment = self._get_assignment()
-        self.group_ids = self._get_groups()
+        # self.group_ids = self._get_groups() # TODO
 
     @property
     def assignment_name(self) -> str:
@@ -75,43 +76,43 @@ class QuercusAssignment:
 
         return response.json()
 
-    def _get_groups(self) -> dict | None:
-        if self.is_group:
-            url = self.endpoints["groups"] + str(self.assignment["group_category_id"]) + self.endpoints["groups_suffix"]
+    # def _get_groups(self) -> dict | None:
+    #     if self.is_group:
+    #         url = self.endpoints["groups"] + str(self.assignment["group_category_id"]) + self.endpoints["groups_suffix"]
 
-            data = {"include": ["users"]}
-            params = {"per_page": 200}
+    #         data = {"include": ["users"]}
+    #         params = {"per_page": 200}
 
-            response = r.get(url, params=params, data=data, headers=self.auth_key, timeout=10)
+    #         response = r.get(url, params=params, data=data, headers=self.auth_key, timeout=10)
 
-            group_data = response.json()
+    #         group_data = response.json()
 
-            group_ids = {}
+    #         group_ids = {}
 
-            if len(group_data) > 0:
-                for group in group_data:
-                    group_ids[group["name"]] = group["id"]
+    #         if len(group_data) > 0:
+    #             for group in group_data:
+    #                 group_ids[group["name"]] = group["id"]
 
-            links = response.headers["Link"].split(",")
+    #         links = response.headers["Link"].split(",")
 
-            while len(links) > 1 and "next" in links[1]:
-                next_url = links[1].split("<")[1].split(">")[0].strip()
-                response = r.get(next_url, headers=self.auth_key, timeout=10)
+    #         while len(links) > 1 and "next" in links[1]:
+    #             next_url = links[1].split("<")[1].split(">")[0].strip()
+    #             response = r.get(next_url, headers=self.auth_key, timeout=10)
 
-                group_data = response.json()
+    #             group_data = response.json()
 
-                if len(group_data) > 0:
-                    for group in group_data:
-                        group_ids[group["name"]] = group["id"]
+    #             if len(group_data) > 0:
+    #                 for group in group_data:
+    #                     group_ids[group["name"]] = group["id"]
 
-                links = response.headers["Link"].split(",")
+    #             links = response.headers["Link"].split(",")
 
-            return group_ids
+    #         return group_ids
 
-        return None
+    #     return None
 
     def group_data_parser(self, group_info: dict) -> list:
-        """Given group info (ID, grade), returns individual student info (ID, group grade).
+        """Given group info (ID, grade), returns individual student info (sis_id, group grade).
 
         Fetches the list of students belonging to a group ID to apply a group grade to each individual student's SIS ID.
 
@@ -142,35 +143,39 @@ class QuercusAssignment:
 
         return parsed_data
 
-    def post_grade(self, user_id: str, grade: float) -> bool:
+    def post_grade(self, sis_id: str, grade: float) -> bool:
         """Posts the grade for a given user.
 
+        The ids must be the sis_user_id for the user. For UofT this is their UTORid.
+
         Args:
-            user_id: The Quercus sis_id for the user.
+            sis_id: The Quercus sis_id for the user. For UofT this is the same as their UTORid.
             grade: The grade (float) to be posted for the user.
 
         Returns:
             bool: True if the request was successful (HTTP status 2xx), False otherwise.
         """
-        url = self.endpoints["submission"] + f"{user_id}"
+        url = self.endpoints["submission"] + f"{sis_id}"
         grade_info = {"submission[posted_grade]": f"{grade:.1f}"}
         response = r.put(url, data=grade_info, headers=self.auth_key, timeout=10)
 
         return response.ok
 
-    def upload_file(self, user_id: int, filepath: pathlib.Path) -> None:
+    def upload_file(self, sis_id: int, filepath: pathlib.Path) -> None:
         """Uploads a single file for a given user.
+
+        The ids must be the sis_user_id for the user. For UofT this is their UTORid.
 
         Api docs for uploading a file: https://developerdocs.instructure.com/services/canvas/basics/file.file_uploads
         Api docs for attaching uploaded file to comment: https://developerdocs.instructure.com/services/canvas/resources/submissions#method.submissions_api.create_file
 
         Args:
-            user_id (int): Quercus sis_id for the user
+            sis_id (int): Quercus sis_id for the user. For UofT this is the same as their UTORid.
             filepath (pathlib.Path): Path to the file to be uploaded
         Returns:
             bool: True if the final linkig was successful (HTTP status 2xx), False otherwise.
         """
-        url = self.endpoints["submission"] + f"{user_id}" + self.endpoints["submission_comments_suffix"]
+        url = self.endpoints["submission"] + f"{sis_id}" + self.endpoints["submission_comments_suffix"]
 
         # Step 1: Get upload URL
         name = filepath.name
@@ -196,7 +201,7 @@ class QuercusAssignment:
 
         # Step 3: Link uploaded file id as a submission comment
         file_id = response.json()["id"]
-        submission_url = self.endpoints["submission"] + f"{user_id}"
+        submission_url = self.endpoints["submission"] + f"{sis_id}"
         comment_info = {
             "comment[file_ids]": [file_id],
             "comment[group_comment]": "true",

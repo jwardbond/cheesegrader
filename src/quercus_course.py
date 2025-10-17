@@ -1,10 +1,5 @@
-import pathlib
-
 import pandas as pd
 import requests as r
-from click import prompt
-
-from .quercus_assignment import QuercusAssignment
 
 
 class QuercusCourse:
@@ -69,21 +64,28 @@ class QuercusCourse:
             ],
         ]
 
-        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[1])
-        cleaned_df["lname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[0])
+        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(
+            lambda s: s.split(", ")[1]
+        )
+        cleaned_df["lname"] = cleaned_df["sortable_name"].apply(
+            lambda s: s.split(", ")[0]
+        )
 
-        print(f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records")
+        print(
+            f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records"
+        )
 
         return cleaned_df
 
-    def upload_assignment_grades(self, assignment_id: int, grades: dict) -> None:
-        """Uploads grades for a specific assignment.
+    def _get_course(self):
+        # based on this post: https://canvas.instructure.com/doc/api/assignments.html#method.assignments_api.show
+        url = self.endpoints["course"]
+        response = r.get(url, headers=self.auth_key)
 
-        Args:
-            assignment_id (int): The assignment ID number on Quercus.
-            grades (dict): A dictionary mapping canvas SIS ids respective grades. {sis_id: grade}
-        """
-        assignment = QuercusAssignment(self.course_id, assignment_id, self.token)
+        return response.json()
 
-        for student, grade in grades.items():
-            assignment.post_grade(student, grade)
+    def _get_student_list(self):
+        url = self.endpoints["students"]
+        response = r.get(url, headers=self.auth_key)
+
+        return response.json()

@@ -17,12 +17,12 @@ def quercus_assignment(mocker):
 
     course_id = "123456"
     assignment_id = "654321"
-    auth_key = "123authtokenabc"
+    token = "123authtokenabc"
 
     return QuercusAssignment(
         course_id=course_id,
         assignment_id=assignment_id,
-        auth_key=auth_key,
+        token=token,
     )
 
 
@@ -47,7 +47,7 @@ def test_post_grade(quercus_assignment, mocker):
     grade = 95.0
 
     # Call the method
-    quercus_assignment.post_grade(user_id=student_id, grade=grade)
+    quercus_assignment.post_grade(sis_id=student_id, grade=grade)
 
     # --- Assertions ---
 
@@ -94,7 +94,7 @@ def test_upload_file(quercus_assignment, mocker):
     filepath = pathlib.Path("./tests/test_data/test_rubrics/1/sta1_rubric.pdf")
 
     # Call the method
-    quercus_assignment.upload_file(user_id=student_id, filepath=filepath)
+    quercus_assignment.upload_file(sis_id=student_id, filepath=filepath)
 
     # --- Assertions ---
 
