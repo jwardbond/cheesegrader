@@ -1,56 +1,129 @@
 import pathlib
-import unittest
-from unittest.mock import MagicMock, patch
+
+import pytest
 
 from src.quercus_assignment import QuercusAssignment
 
 
-class TestQuercusAssignment(unittest.TestCase):
-    @patch("src.quercus_assignment.r.get")
-    def setUp(self, mock_get):
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"name": "Test Assignment", "group_category_id": None}  # Response for _get_assignment
+@pytest.fixture
+def quercus_assignment(mocker):
+    # Patch r.get used in __init__ to avoid real network calls
+    mock_get = mocker.patch("src.quercus_assignment.r.get")
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {
+        "name": "Test Assignment",
+        "group_category_id": None,
+    }
 
-        self.course_id = "123456"
-        self.assigment_id = "654321"
-        self.auth_key = "123authtokenabc"
+    course_id = "123456"
+    assignment_id = "654321"
+    auth_key = "123authtokenabc"
 
-        self.obj = QuercusAssignment(course_id=self.course_id, assignment_id=self.assigment_id, auth_key=self.auth_key)
+    return QuercusAssignment(
+        course_id=course_id,
+        assignment_id=assignment_id,
+        auth_key=auth_key,
+    )
 
-    @patch("src.quercus_assignment.r.post")
-    @patch("src.quercus_assignment.r.put")
-    def test_upload_file_indiv(self, mock_put, mock_post):
-        mock_post.side_effect = [
-            MagicMock(status_code=200, json=lambda: {"upload_url": "http://example.com/upload", "upload_params": {"testkey": "testvalue"}}),
-            MagicMock(status_code=200, json=lambda: {"id": "fid123"}),
-        ]
 
-        # Create a mock response for the PUT request
-        mock_put.return_value.status_code = 200
+class FakePostResponse:
+    def __init__(self, json_data, status_code=200):
+        self._json = json_data
+        self.status_code = status_code
 
-        # Create an instance of QuercusAssignment
-        obj = self.obj
+    def json(self):
+        return self._json
 
-        # Get filepaths
-        student_id = "sta1"
-        filepath = pathlib.Path("./tests/test_data/test_rubrics/1/sta1_rubric.pdf")
 
-        # Call the method
-        result = obj.upload_file(user_id=student_id, filepath=filepath)
+def test_post_grade(quercus_assignment, mocker):
+    # --- Setup ---
 
-        # Check that the call to get an upload URL was made
-        mock_post.assert_any_call(
-            f"https://q.utoronto.ca/api/v1/courses/{self.course_id}/assignments/{self.assigment_id}/submissions/sis_user_id:{student_id}/comments/files",
-            data={"name": filepath.name, "size": filepath.stat().st_size, "content_type": "application/docx"},
-            headers={"Authorization": f"Bearer {self.auth_key}"},
-        )
+    # Patch PUT
+    mock_put = mocker.patch("src.quercus_assignment.r.put")
+    mock_put.return_value.status_code = 200
 
-        # Check that the call to upload the file was made
-        mock_post.assert_any_call("http://example.com/upload", files={"upload_file": unittest.mock.ANY}, data={"testkey": "testvalue"})
+    # Get test data
+    student_id = "sta1"
+    grade = 95.0
 
-        # Check that the comment linking call was made
-        mock_put.assert_called_once_with(
-            f"https://q.utoronto.ca/api/v1/courses/{self.course_id}/assignments/{self.assigment_id}/submissions/sis_user_id:{student_id}",
-            data={"comment[file_ids]": ["fid123"], "comment[group_comment]": "true"},
-            headers={"Authorization": f"Bearer {self.auth_key}"},
-        )
+    # Call the method
+    quercus_assignment.post_grade(user_id=student_id, grade=grade)
+
+    # --- Assertions ---
+
+    # Check that r.post was called with correct parameters
+    mock_put.assert_called_once_with(
+        f"https://q.utoronto.ca/api/v1/courses/{quercus_assignment.course_id}/assignments/{quercus_assignment.assignment_id}/submissions/sis_user_id:{student_id}",
+        data={"submission[posted_grade]": f"{grade:.1f}"},
+        headers=quercus_assignment.auth_key,
+        timeout=10,
+    )
+
+
+def test_upload_file(quercus_assignment, mocker):
+    # --- Setup ---
+
+    # Patch first two POST requests
+    mock_post = mocker.patch("src.quercus_assignment.r.post")
+    mock_post.side_effect = [
+        FakePostResponse(
+            {
+                "upload_url": "http://example.com/upload",
+                "upload_params": {"testkey": "testvalue"},
+            },
+        ),
+        FakePostResponse(
+            {
+                "id": "fid123",
+            },
+        ),
+    ]
+
+    # Patch file open to avoid actual file I/O
+    mock_open = mocker.patch(
+        "pathlib.Path.open",
+        mocker.mock_open(read_data="filedata"),
+    )
+
+    # Patch the final PUT request
+    mock_put = mocker.patch("src.quercus_assignment.r.put")
+    mock_put.return_value.status_code = 200
+
+    # Get filepaths
+    student_id = "sta1"
+    filepath = pathlib.Path("./tests/test_data/test_rubrics/1/sta1_rubric.pdf")
+
+    # Call the method
+    quercus_assignment.upload_file(user_id=student_id, filepath=filepath)
+
+    # --- Assertions ---
+
+    # First POST must be called correctly
+    mock_post.assert_any_call(
+        f"https://q.utoronto.ca/api/v1/courses/{quercus_assignment.course_id}/assignments/{quercus_assignment.assignment_id}/submissions/sis_user_id:{student_id}/comments/files",
+        data={
+            "name": filepath.name,
+            "size": filepath.stat().st_size,
+        },
+        headers=quercus_assignment.auth_key,
+        timeout=10,
+    )
+
+    # Secdond POST must be called correctly with correct upload params
+    mock_post.assert_any_call(
+        "http://example.com/upload",
+        files={"upload_file": mock_open.return_value},
+        data={"testkey": "testvalue"},
+        timeout=10,
+    )
+
+    # PUT: link file to comment
+    mock_put.assert_called_once_with(
+        f"https://q.utoronto.ca/api/v1/courses/{quercus_assignment.course_id}/assignments/{quercus_assignment.assignment_id}/submissions/sis_user_id:{student_id}",
+        data={
+            "comment[file_ids]": ["fid123"],
+            "comment[group_comment]": "true",
+        },
+        headers=quercus_assignment.auth_key,
+        timeout=10,
+    )
