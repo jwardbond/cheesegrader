@@ -1,37 +1,46 @@
+"""Quercus Assignment API Client.
+
+This module provides the QuercusAssignment class for interacting with the
+Canvas/Quercus LMS API, specifically for managing assignments, submissions,
+grades, and file uploads.
+
+Classes:
+    QuercusAssignment: The primary client class for assignment management.
+
+TODO:
+    * Implement batch submission/grade updates.
+    * Implement deletion of submission comments.
+
+:copyright: (c) 2025 by Jesse Ward-Bond.
+:license: MIT, see LICENSE for more details.
+"""
+
 import pathlib
 
 import requests as r
-
-# TODO batch uploads: https://developerdocs.instructure.com/services/canvas/resources/submissions#method.submissions_api.bulk_update
-# TODO deleting comments: https://developerdocs.instructure.com/services/canvas/resources/submission_comments#method.submission_comments_api.destroy
 
 
 class QuercusAssignment:
     """A class to interact with the Quercus API for uploading and managing course assignments.
 
-    This class provides methods for accessing course details, student lists, and student submissions for courses at UofT, and provides methods for uploading grades/rubrics.
-
-    Most of this code has been adapted from # TODO I forgot where I got it lol
+    This class provides methods for accessing assignment details, and uploading grades/rubrics.
 
     Attributes:
-        course_id (str): The course number on Quercus
-        assignment_id (str, optional): The assignment number on Quercus (if provided)
-        auth_key (dict): The auth token for canvas API. See Readme for more details.
-        endpoints (dict): A collection of API endpoint URLs related to the course, assignment, submissions, groups, and students.
-        course (dict): The course information fetched from the API.
+        course_id (str, int): The course number on Quercus
+        auth_key (dict): The Authorization header dictionary for Canvas API requests. i.e. {'Authorization': 'Bearer <token>'}
+        endpoints (dict): A collection of API endpoint URLs related to the assignment.
         assignment (dict): The assignment information fetched from the API.
         group_ids (list): A list of group IDs associated with the course.
-        students (dict): A dictionary of records for students enrolled in the course
-
-    Methods:
-        _get_course(): Fetches course information from the Quercus API.
-        _get_assignment(): Fetches assignment information from the Quercus API.
-        _get_groups(): Fetches group IDs associated with the course.
-        _get_student_list(): Fetches the list of students enrolled in the course.
-
     """
 
     def __init__(self, course_id: int, assignment_id: int, auth_key: str) -> None:
+        """Initializes the QuercusAssignment object and fetches initial data.
+
+        Args:
+            course_id (int): The course ID number on Quercus.
+            assignment_id (int): The assignment ID number on Quercus.
+            auth_key (str): The raw authentication token (string). Details about this are in the README.
+        """
         self.course_id = course_id
         self.assignment_id = assignment_id
         self.auth_key = {"Authorization": f"Bearer {auth_key}"}
@@ -49,6 +58,16 @@ class QuercusAssignment:
         # Fetch assignment info
         self.assignment = self._get_assignment()
         self.group_ids = self._get_groups()
+
+    @property
+    def assignment_name(self) -> str:
+        """Returns the name of the assignment."""
+        return self.assignment["name"]
+
+    @property
+    def is_group(self) -> bool:
+        """Returns whether the assignment is a group assignment."""
+        return self.assignment["group_category_id"] is not None
 
     def _get_assignment(self):
         url = self.endpoints["assignment"]
@@ -89,30 +108,23 @@ class QuercusAssignment:
 
             return group_ids
 
-        else:
-            return None
-
-    @property
-    def assignment_name(self) -> str:
-        """Returns the name of the assignment."""
-        return self.assignment["name"]
-
-    @property
-    def is_group(self) -> bool:
-        """Returns whether the assignment is a group assignment."""
-        return self.assignment["group_category_id"] is not None
+        return None
 
     def group_data_parser(self, group_info: dict) -> list:
-        """Given group info (id, grade), returns individual student info (id, group grade).
+        """Given group info (ID, grade), returns individual student info (ID, group grade).
+
+        Fetches the list of students belonging to a group ID to apply a group grade to each individual student's SIS ID.
 
         Args:
-            group_info: todo
+            group_info: A dictionary containing the group's ID (name) and the grade
+                        to be applied, e.g., {'id': 'Group A', 'grade': 90.0}.
 
         Returns:
-            list: a list of dicts containing student grading information
+            list: A list of dictionaries, each containing student grading information
         """
-        url = self.endpoints["group_users"] + str(self.group_ids[group_info["id"]]) + self.endpoints["group_users_suffix"]
-
+        url = (
+            self.endpoints["group_users"] + str(self.group_ids[group_info["id"]]) + self.endpoints["group_users_suffix"]
+        )
         params = {"per_page": 20}
 
         response = r.get(url, params=params, headers=self.auth_key, timeout=10)
@@ -134,8 +146,11 @@ class QuercusAssignment:
         """Posts the grade for a given user.
 
         Args:
-            user_id (int): Quercus sis_id for the user
-            grade (float): Grade for the user
+            user_id: The Quercus sis_id for the user.
+            grade: The grade (float) to be posted for the user.
+
+        Returns:
+            bool: True if the request was successful (HTTP status 2xx), False otherwise.
         """
         url = self.endpoints["submission"] + f"{user_id}"
         grade_info = {"submission[posted_grade]": f"{grade:.1f}"}
@@ -152,6 +167,8 @@ class QuercusAssignment:
         Args:
             user_id (int): Quercus sis_id for the user
             filepath (pathlib.Path): Path to the file to be uploaded
+        Returns:
+            bool: True if the final linkig was successful (HTTP status 2xx), False otherwise.
         """
         url = self.endpoints["submission"] + f"{user_id}" + self.endpoints["submission_comments_suffix"]
 
