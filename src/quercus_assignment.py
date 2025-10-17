@@ -33,7 +33,7 @@ class QuercusAssignment:
         group_ids (list): A list of group IDs associated with the course.
     """
 
-    def __init__(self, course_id: int, assignment_id: int, auth_key: str) -> None:
+    def __init__(self, course_id: int, assignment_id: int, token: str) -> None:
         """Initializes the QuercusAssignment object and fetches initial data.
 
         Args:
@@ -43,7 +43,7 @@ class QuercusAssignment:
         """
         self.course_id = course_id
         self.assignment_id = assignment_id
-        self.auth_key = {"Authorization": f"Bearer {auth_key}"}
+        self.auth_key = {"Authorization": f"Bearer {token}"}
         self.endpoints = {
             "course": f"https://q.utoronto.ca/api/v1/courses/{course_id}/",
             "assignment": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}",

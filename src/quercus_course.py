@@ -7,16 +7,14 @@ from click import prompt
 from .quercus_assignment import QuercusAssignment
 
 
-class QuercusCourse(object):
-    """A course object for interacting with Quercus through Canvas APIs.
+class QuercusCourse:
+    """A course object for interacting with a Quercus course through Canvas APIs.
 
-    This class provides methods for accessing course details, student lists, and student submissions for courses at UofT, and provides methods for uploading grades/rubrics.
-
-    Most of this code has been adapted from # TODO I forgot where I got it lol
+    This class provides methods for accessing course details, student lists, and student submissions.
 
     Attributes:
         course_id (str, int): The course number on Quercus
-        auth_key (str): The authentication token for Canvas APIs. See ReadMe for more details.
+        auth_key (dict): The Authorization header dictionary for Canvas API requests. i.e. {'Authorization': 'Bearer <token>'}
         endpoints (dict): A collection of API endpoint URLs related to the course.
         course (dict): The course information fetched from the API.
         students (dict): A dictionary of records for students enrolled in the course
@@ -29,9 +27,8 @@ class QuercusCourse(object):
 
     """
 
-    def __init__(self, course_id: str | int, auth_key: str) -> None:
-        self.token = auth_key
-        self.auth_key = {"Authorization": f"Bearer {auth_key}"}
+    def __init__(self, course_id: str | int, token: str) -> None:
+        self.auth_key = {"Authorization": f"Bearer {token}"}
         self.course_id = course_id
 
         self.endpoints = {
@@ -65,6 +62,8 @@ class QuercusCourse(object):
                 - integration_id: The ID used for integrations (usually the same as UTORid)
                 - name: The full name of the student (First Middle Last)
                 - sortable_name: A format of the name suitable for sorting (Last, First Middle)
+                - fname: The first name of the student
+                - lname: The last name of the student
         """
         raw_df = pd.DataFrame.from_records(self.students)
         cleaned_df = raw_df.drop_duplicates()
@@ -138,7 +137,9 @@ class QuercusCourse(object):
                             missing_files.append(idx)
                         else:  # upload files
                             for f in files:
-                                assignment.upload_file(idx, f, student["group_id"]) if assignment.is_group() else assignment.upload_file(idx, f)
+                                assignment.upload_file(
+                                    idx, f, student["group_id"]
+                                ) if assignment.is_group() else assignment.upload_file(idx, f)
 
                     # Upload grades
                     if mode in (0, 1):  # Upload grades
