@@ -23,7 +23,7 @@ def ensure_token() -> str:
 
     if TOKEN_FILE.exists():
         typer.echo(f"A saved token was found at {TOKEN_FILE}.")
-        confirm("Use saved token?")
+        use_saved = confirm("Use saved token?")
 
         token = load_token() if use_saved else None
 

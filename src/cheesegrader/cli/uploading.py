@@ -59,7 +59,6 @@ def run() -> None:
         match mode:
             case UploadMode.GRADES:
                 grades_list, grades_path, header_map = prompt_get_csv({"id", "grade"})
-                print(grades_list, grades_path, header_map)
                 if prompt_confirm_grade_upload(course, assignment, grades_path, header_map):
                     errors = upload_grades(assignment, grades_list)
                     upload_errors.extend(errors)
@@ -72,6 +71,7 @@ def run() -> None:
 
                 if prompt_confirm_file_upload(course, assignment, id_path, header_map, dir_list):
                     errors = upload_files(assignment, id_list, dir_list)
+                    typer.echo()
                 else:
                     continue
 
@@ -82,12 +82,14 @@ def run() -> None:
                 if prompt_confirm_grade_upload(course, assignment, grades_path, header_map):
                     grade_errors = upload_grades(assignment, grades_list)
                     upload_errors.extend(grade_errors)
+                    typer.echo()
                 else:
                     continue
 
                 if prompt_confirm_file_upload(course, assignment, grades_path, header_map, dir_list):
                     file_errors = upload_files(assignment, grades_list, dir_list)
                     upload_errors.extend(file_errors)
+                    typer.echo()
                 else:
                     continue
 
@@ -122,6 +124,8 @@ def prompt_get_dirs() -> list[Path]:
     add_more = True
     while add_more:
         dir_str = prompt("Enter the path to the directory you would like to search for files")
+        dir_str = dir_str.strip()
+        dir_str = dir_str.strip('"')
 
         dirs.append(Path(dir_str))
 
@@ -161,13 +165,13 @@ def prompt_confirm_file_upload(
 ) -> bool:
     """Display final details before uploading grades."""
     typer.echo("Please confirm the following details before uploading:")
-    typer.echo(f"\tCourse name: \t {course.course_name}")
-    typer.echo(f"\tAssigmennt name: \tLoaded assignment: {assignment.assignment_name}")
-    typer.echo(f"\tID file: \t {id_file}")
-    typer.echo(f"\t\tID column: {header_map['id']}")
+    typer.echo(f"\tCourse name:  {course.course_name}")
+    typer.echo(f"\tAssigmennt name:  Loaded assignment: {assignment.assignment_name}")
+    typer.echo(f"\tID file:  {id_file}")
+    typer.echo(f"\tID column: {header_map['id']}")
     typer.echo(f"\tLooking for files with {header_map['id']} in name within:")
     for d in dirs:
-        typer.echo(d.absolute())
+        typer.echo(f"\t\t{d.absolute()}")
 
     response = confirm("Confirm?")
 

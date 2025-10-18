@@ -32,7 +32,7 @@ class UploadMode(Enum):
 
 
 def search_dirs(idx: str, dirs: list[Path]) -> list[Path]:
-    """Given an ID and a list of directories, returns a list of files that match the ID.
+    """Given an ID and a list of directories, returns a list of files with ID in the filename.
 
     Searches the provided directories recersively.
 
@@ -45,7 +45,7 @@ def search_dirs(idx: str, dirs: list[Path]) -> list[Path]:
     """
     output = []
     for d in dirs:
-        matched_files = list(d.rglob(f"{idx}*"))
+        matched_files = list(d.rglob(f"*{idx}*"))
         output.extend(matched_files)
     return output
 
@@ -64,7 +64,7 @@ def upload_grades(
         list[str]: A list of error messages for grades that failed to upload.
     """
     error_list = []
-    for row in grades:
+    for row in grades:  # TODO progress bar
         sis_id = row.get("id", "").strip()
         grade = row.get("grade", "").strip()
         grade = float(grade)
@@ -74,7 +74,11 @@ def upload_grades(
             continue
 
         try:
-            assignment.post_grade(sis_id, grade)
+            print(f"\t Posting {sis_id} {grade:.1f}")
+            assignment.post_grade(
+                sis_id,
+                grade,
+            )
         except Exception:  # noqa: BLE001
             error_list.append(f"{sis_id}: \t Missing student or post failed")
 
@@ -83,7 +87,7 @@ def upload_grades(
 
 def upload_files(
     assignment: QuercusAssignment,
-    lookup_ids: list[str],
+    student_list: dict,
     dirs: list[Path],
 ) -> list[str]:
     """Finds files for the given IDs in the specified directories and uploads them as submissions.
@@ -97,18 +101,23 @@ def upload_files(
         list[str]: A list of error messages for files that were not found or failed to upload.
     """
     error_list = []
-    for lid in lookup_ids:
+    for student in student_list:
+        lid = student["id"]
         files = search_dirs(lid, dirs)
-
         if not files:
             error_list.append(f"{lid}: \t No files found")
-        if len(files) < len(dirs):
-            error_list.append(f"{lid}: \t Fewer files found than directories searched. Likely missing files.")
         else:
+            print(f"\t Uploading files for {lid}")
             for f in files:
                 try:
                     assignment.upload_file(lid, f)
                 # TODO: Specify exception, e.g., catch requests.HTTPError or a custom FileUploadError
                 except Exception:  # noqa: BLE001
                     error_list.append(f"{lid}: \t Upload failed for {f.name}")
+
+        if len(files) < len(dirs):
+            error_list.append(
+                f"{lid}: \t Fewer files found than directories searched. Likely missing files for this student.",
+            )
+
     return error_list
