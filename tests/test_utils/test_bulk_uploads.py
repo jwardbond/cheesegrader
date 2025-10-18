@@ -1,6 +1,6 @@
 import pathlib
 
-from src.workflows import search_dirs
+from cheesegrader.utils.bulk_uploads import search_dirs
 
 
 def test_search_dirs_finds_all_files():

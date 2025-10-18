@@ -55,9 +55,11 @@ ignore = [
     ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["D", "ANNO01", "ANN201", "PT", "SLF001", "S101"] # Docstrings etc.
+"tests/*" = ["D", "ANN001", "ANN201", "PT", "SLF001", "S101"] # Docstrings etc.
 "download.py" = ["T201"] # Print statements
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
+[tool.pytest.ini_options]
+pythonpath = ["src"]

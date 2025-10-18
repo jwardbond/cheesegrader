@@ -2,13 +2,13 @@ import pathlib
 
 import pytest
 
-from src.quercus_assignment import QuercusAssignment
+from cheesegrader.api_tools import QuercusAssignment
 
 
 @pytest.fixture
 def quercus_assignment(mocker):
     # Patch r.get used in __init__ to avoid real network calls
-    mock_get = mocker.patch("src.quercus_assignment.r.get")
+    mock_get = mocker.patch("cheesegrader.api_tools.assignments.r.get")
     mock_get.return_value.status_code = 200
     mock_get.return_value.json.return_value = {
         "name": "Test Assignment",
@@ -39,7 +39,7 @@ def test_post_grade(quercus_assignment, mocker):
     # --- Setup ---
 
     # Patch PUT
-    mock_put = mocker.patch("src.quercus_assignment.r.put")
+    mock_put = mocker.patch("cheesegrader.api_tools.assignments.r.put")
     mock_put.return_value.status_code = 200
 
     # Get test data
@@ -64,7 +64,7 @@ def test_upload_file(quercus_assignment, mocker):
     # --- Setup ---
 
     # Patch first two POST requests
-    mock_post = mocker.patch("src.quercus_assignment.r.post")
+    mock_post = mocker.patch("cheesegrader.api_tools.assignments.r.post")
     mock_post.side_effect = [
         FakePostResponse(
             {
@@ -86,7 +86,7 @@ def test_upload_file(quercus_assignment, mocker):
     )
 
     # Patch the final PUT request
-    mock_put = mocker.patch("src.quercus_assignment.r.put")
+    mock_put = mocker.patch("cheesegrader.api_tools.assignments.r.put")
     mock_put.return_value.status_code = 200
 
     # Get filepaths

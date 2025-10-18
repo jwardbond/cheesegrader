@@ -64,16 +64,10 @@ class QuercusCourse:
             ],
         ]
 
-        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(
-            lambda s: s.split(", ")[1]
-        )
-        cleaned_df["lname"] = cleaned_df["sortable_name"].apply(
-            lambda s: s.split(", ")[0]
-        )
+        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[1])
+        cleaned_df["lname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[0])
 
-        print(
-            f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records"
-        )
+        print(f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records")
 
         return cleaned_df
 

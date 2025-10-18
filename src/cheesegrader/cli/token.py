@@ -1,22 +1,29 @@
-import typer
-from pathlib import Path
 import json
+import os
+from pathlib import Path
+
+import typer
+
 from cheesegrader.api_tools import validate_token
+from cheesegrader.cli.utils import create_confirm, create_prompt
 
 TOKEN_FILE = Path.home() / ".cheesegrader_token"
+TOKEN_VAR_NAME = "CG_TOKEN"
+
+HELP_MSG = "TBD"  # TODO
+
+prompt = create_prompt(HELP_MSG)
+confirm = create_confirm(HELP_MSG)
 
 
 def ensure_token() -> str:
     """Prompt for token if not stored, validate, and persist."""
-
     use_saved = False
     token = None
 
     if TOKEN_FILE.exists():
-        use_saved = typer.confirm(
-            f"A saved token was found at {TOKEN_FILE}. Do you want to use it?",
-            default=True,
-        )
+        typer.echo(f"A saved token was found at {TOKEN_FILE}.")
+        confirm("Use saved token?")
 
         token = load_token() if use_saved else None
 
@@ -28,20 +35,20 @@ def ensure_token() -> str:
     if not validate_token(token):
         typer.secho("Invalid token.", fg=typer.colors.RED)
         typer.echo(
-            "You can get a token from your account page by following the instructions: https://developerdocs.instructure.com/services/canvas/oauth2/file.oauth#manual-token-generation"
+            "You can get a token from your account page by following the instructions: https://developerdocs.instructure.com/services/canvas/oauth2/file.oauth#manual-token-generation",
         )
         return ensure_token()
 
     typer.secho("Token validated.", fg=typer.colors.GREEN)
 
     if not use_saved:
-        save_new = typer.confirm(
-            "Do you want to save this token for future use?", default=True
-        )
+        save_new = confirm("Do you want to save this token for future use?", default=True)
         if save_new:
             save_token(token)
 
-    return token
+    # Load into env
+    os.environ[TOKEN_VAR_NAME] = token
+    return None
 
 
 def load_token() -> str | None:

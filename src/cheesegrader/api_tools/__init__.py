@@ -1,1 +1,3 @@
 from cheesegrader.api_tools.tokens import validate_token
+from cheesegrader.api_tools.assignments import QuercusAssignment
+from cheesegrader.api_tools.courses import QuercusCourse
