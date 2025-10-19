@@ -58,7 +58,7 @@ def run() -> None:
         upload_errors = []
         match mode:
             case UploadMode.GRADES:
-                grades_list, grades_path, header_map = prompt_get_csv({"id", "grade"})
+                grades_list, grades_path, header_map = prompt_get_csv(["id", "grade"])
                 if prompt_confirm_grade_upload(course, assignment, grades_path, header_map):
                     errors = upload_grades(assignment, grades_list)
                     upload_errors.extend(errors)
@@ -66,7 +66,7 @@ def run() -> None:
                     continue
 
             case UploadMode.FILES:
-                id_list, id_path, header_map = prompt_get_csv({"id"})
+                id_list, id_path, header_map = prompt_get_csv(["id"])
                 dir_list = prompt_get_dirs()
 
                 if prompt_confirm_file_upload(course, assignment, id_path, header_map, dir_list):
@@ -190,7 +190,7 @@ def prompt_select_header(headers: list[str]) -> str:
         typer.secho("Invalid selection", fg=ERROR_FG)
 
 
-def prompt_get_csv(required_headers: set[str]) -> tuple[list, Path, dict]:
+def prompt_get_csv(required_headers: list[str]) -> tuple[list, Path, dict]:
     """Prompt user to input a CSV file path and returns its contents as a list of dicts.
 
     If the csv is missing required headers, prompts the user to map existing headers to required ones.
