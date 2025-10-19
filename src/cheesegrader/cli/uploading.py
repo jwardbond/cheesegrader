@@ -44,13 +44,13 @@ def run() -> None:
         course_id = prompt("Enter Course ID")
         typer.echo("Loading course...")
         course = QuercusCourse(course_id, token=os.getenv("CG_TOKEN"))
-        typer.secho(f"Loaded course: {course.course_name} ({course_id})\n", fg=SUCCESS_FG)
+        typer.secho(f"Loaded course: {course.course_name} ({course_id})", fg=SUCCESS_FG)
 
         # Set up assignment
         assignment_id = prompt("Enter Assignment ID")
         typer.echo("Loading assignment...")
         assignment = QuercusAssignment(course_id, assignment_id, token=os.getenv("CG_TOKEN"))
-        typer.secho(f"Loaded assignment: {assignment.assignment_name} ({assignment_id})\n", fg=SUCCESS_FG)
+        typer.secho(f"Loaded assignment: {assignment.assignment_name} ({assignment_id})", fg=SUCCESS_FG)
 
         # Select mode and upload
         mode = prompt_mode()
@@ -129,7 +129,7 @@ def prompt_get_dirs() -> list[Path]:
 
         dirs.append(Path(dir_str))
 
-        typer.echo("Added directory: " + dir_str)
+        typer.secho("Added directory: " + dir_str, fg=SUCCESS_FG)
 
         add_more = confirm("Add another directory?", default=False, abort=True)
 
@@ -206,6 +206,7 @@ def prompt_get_csv(required_headers: list[str]) -> tuple[list, Path, dict]:
         path_str = path_str.strip()
         path_str = path_str.strip('"')
         path = Path(path_str)
+        typer.secho("Added grade/student list: " + path.resolve(), fg=SUCCESS_FG)
 
         # Validate filepath
         if not path.exists():

@@ -5,7 +5,7 @@ from pathlib import Path
 import typer
 
 from cheesegrader.api_tools import validate_token
-from cheesegrader.cli.utils import create_confirm, create_prompt
+from cheesegrader.cli.utils import SUCCESS_FG, create_confirm, create_prompt
 
 TOKEN_FILE = Path.home() / ".cheesegrader_token"
 TOKEN_VAR_NAME = "CG_TOKEN"
@@ -61,7 +61,7 @@ def load_token() -> str | None:
 
 
 def save_token(token: str):
-    typer.echo(f"Saving token to {TOKEN_FILE}")
+    typer.secho(f"Saved token to {TOKEN_FILE}", fg=SUCCESS_FG)
     TOKEN_FILE.write_text(json.dumps({"token": token}))
 
 
