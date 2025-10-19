@@ -11,6 +11,7 @@ PROMPT_FG = typer.colors.BLACK
 
 # Help message styles
 HELP_FG = typer.colors.CYAN
+HELP_BG = typer.colors.CYAN
 
 # General styles
 ERROR_FG = typer.colors.RED
@@ -35,11 +36,15 @@ def create_prompt(help_msg: str) -> Callable[..., str]:
 
         response = typer.prompt("", *args, **kwargs)
 
-        if response is str:
+        if isinstance(response, str):
             if response.lower() == "h":
                 typer.secho(help_msg, fg=HELP_FG)
+                typer.echo()
+                typer.secho("Press any key to continue", fg=PROMPT_FG, bg=HELP_BG, nl=False)
+                input()
+
             if response.lower() == "q":
-                typer.Exit()
+                raise typer.Exit
 
         return response
 

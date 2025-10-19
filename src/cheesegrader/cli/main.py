@@ -15,8 +15,7 @@ Help Menu:
 
     ---
     Enter 'q' or press ctrl+c to quit at any time.
-    Enter 'h' for help.
-"""
+    Enter 'h' for help."""
 
 
 @app.command()
