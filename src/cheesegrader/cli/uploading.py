@@ -39,6 +39,8 @@ confirm = create_confirm(HELP_TEXT)
 
 
 def run() -> None:
+    typer.secho("=== UPLOAD TOOL ===", bold=True)
+
     while True:
         # Set up course
         course_id = prompt("Enter Course ID")
