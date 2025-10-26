@@ -45,10 +45,13 @@ def run() -> None:
     # Get destination path
     dest_dir = prompt_input_path("Input the destination folder")
 
-    # Copy folders
-    typer.secho("Copying files...", fg=WARN_FG)
-    copy_rename(input_filepath, student_data, name_fields, dest_dir)
-    typer.secho("Files copied", fg=SUCCESS_FG)
+    if prompt_confirm_proceed(input_filepath, dest_dir, name_fields):
+        # Copy folders
+        typer.secho("Copying files...", fg=WARN_FG)
+        copy_rename(input_filepath, student_data, name_fields, dest_dir)
+        typer.secho("Files copied", fg=SUCCESS_FG)
+
+        return
 
 
 def prompt_input_path(prompt_text: str) -> Path:
@@ -131,21 +134,26 @@ def prompt_select_header(headers: list[str]) -> str:
         typer.secho("Invalid selection", fg=ERROR_FG)
 
 
-# def select_headers(headers: list[str]) -> list[str]:
-#     """Let the user select multiple headers from the list using prompt_select_header."""
-#     selected = []
-#     remaining = list(headers)
+def prompt_confirm_proceed(
+    input_filepath: Path,
+    dest_dir: Path,
+    name_fields: list[str],
+) -> bool:
+    """Prompt the user to confirm proceeding with the copy operation."""
+    typer.secho("Please confirm the following settings:")
+    typer.secho(f"\tInput file to copy: {input_filepath}")
+    typer.secho(f"\tDestination directory: {dest_dir}")
 
-#     typer.secho("Select columns to copy (pick one at a time):", fg=SUCCESS_FG)
-#     while remaining:
-#         typer.echo()
-#         header = prompt_select_header(remaining)
-#         selected.append(header)
-#         remaining.remove(header)
+    # Construct sample filename
+    base = input_filepath.stem
+    suffix = input_filepath.suffix
+    filename = [f"[{field}]" for field in name_fields]
+    filename = "_".join(filename)
+    filename = filename + "_" + base + suffix
+    filename = filename.replace(" ", "_")  # remove any lingering spaces
+    filename = filename.lower()
+    typer.secho(f"\tFile names: {filename}")
 
-#         if not remaining:
-#             break
-#         if not confirm("Select another column?", default=False):
-#             break
+    response = confirm("Proceed with copying files?")
 
-#     return selected
+    return response
