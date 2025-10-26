@@ -63,7 +63,11 @@ def create_confirm(help_msg: str) -> Callable[..., str]:
             typer.echo()
             typer.secho(prompt_text + " [y/n]", fg=PROMPT_FG, bg=PROMPT_BG, nl=False)
 
-            response = typer.prompt("").strip().lower()
+            # Remove text from args so not duplicated
+            if args:
+                args = args[1:]
+
+            response = typer.prompt("", *args, **kwargs).strip().lower()
 
             if response in ("y", "yes"):
                 return True
