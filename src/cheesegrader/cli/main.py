@@ -33,6 +33,7 @@ prompt = create_prompt(HELP_TEXT)
 
 def main_menu() -> None:
     while True:
+        typer.echo()
         typer.echo("Available modules: ")
         typer.echo("\t[0] Sorting")
         typer.echo("\t[1] Copying")

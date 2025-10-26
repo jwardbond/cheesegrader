@@ -35,6 +35,7 @@ def create_prompt(help_msg: str) -> Callable[..., str]:
             args = args[1:]
 
         response = typer.prompt("", *args, **kwargs)
+        typer.echo()
 
         if isinstance(response, str):
             if response.lower() == "h":
@@ -68,6 +69,7 @@ def create_confirm(help_msg: str) -> Callable[..., str]:
                 args = args[1:]
 
             response = typer.prompt("", *args, **kwargs).strip().lower()
+            typer.echo()
 
             if response in ("y", "yes"):
                 return True
