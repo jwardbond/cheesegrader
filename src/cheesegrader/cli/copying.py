@@ -61,12 +61,12 @@ def prompt_input_path(prompt_text: str) -> Path:
         path = Path(path_str).resolve()
         if path.exists():
             return path
-        else:
-            typer.secho("Path does not exist!", fg=WARN_FG)
-            typer.secho("Creating directory...", fg=WARN_FG)
-            path.mkdir(parents=True, exist_ok=True)
-            typer.secho(f"Created directory at {path}", fg=SUCCESS_FG)
-            return path
+
+        typer.secho("Path does not exist!", fg=WARN_FG)
+        typer.secho("Creating directory...", fg=WARN_FG)
+        path.mkdir(parents=True, exist_ok=True)
+        typer.secho(f"Created directory at {path}", fg=SUCCESS_FG)
+        return path
 
 
 def prompt_get_csv() -> tuple[list, Path, dict]:
