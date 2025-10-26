@@ -37,3 +37,41 @@ def copy_rename(
 
         # Copy file to new location
         shutil.copyfile(input_filepath, output_dir / filename)
+
+
+def filesorter(
+    sort_dir: Path,
+    dest_dir: Path,
+    sort_map: dict[str, str],
+) -> list[str]:
+    """Sorts files into folders.
+
+    Looks for files in `sort_dir` that match KEYS in `sort_map` and copies them
+    into subfolders in `dest_dir` based on the corresponding VALUES in `sort_map`.
+
+    Args:
+        sort_dir (Path): The directory containing files to be sorted.
+        dest_dir (Path): The base directory where sorted files will be placed.
+        sort_map (dict[str, str]): A mapping of student identifiers to their corresponding
+            destination subfolder names.
+
+    Returns:
+        list[str]: A list of filenames that were not found in the source directory.
+    """
+    missing_files = []
+
+    for filename, subdir in sort_map.items():
+        # Create output folder
+        output_dir = dest_dir / subdir
+        output_dir.mkdir(exist_ok=True, parents=True)
+
+        # Find files that match
+        matches = sort_dir.glob(f"*{filename}*")
+
+        if not matches:
+            missing_files.append(filename)
+
+        for file in matches:
+            shutil.copyfile(file, output_dir / file.name)
+
+    return missing_files
