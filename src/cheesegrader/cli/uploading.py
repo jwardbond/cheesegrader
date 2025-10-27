@@ -1,3 +1,16 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+
+"""File uploading tool for CheeseGrader CLI.
+
+Guides the user through uploading grades and student files to Quercus.
+
+Interacts with CANVAS/Quercus APIs to upload grades and student files
+based on a provided CSV file containing student UTORIDs.
+
+Intended to be run as a subcommand of the Cheesegrader CLI.
+"""
+
 from enum import Enum
 from pathlib import Path
 
@@ -54,6 +67,7 @@ class UploadMode(Enum):
 
 
 def run() -> None:
+    """Run the uploading workflow."""
     typer.secho("\n=== UPLOAD TOOL ===\n", bold=True)
 
     while True:

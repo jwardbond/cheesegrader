@@ -1,4 +1,14 @@
-import csv
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+
+"""File copying and renaming tool for CheeseGrader CLI.
+
+Guides the user through copying a file multiple times and renaming
+each copy based on a provided CSV file containing student information.
+
+Intended to be run as a subcommand of the Cheesegrader CLI.
+"""
+
 from pathlib import Path
 
 import typer
@@ -41,6 +51,7 @@ STUDENT_LISTS_DIR = Path("data/student_lists")
 
 
 def run() -> None:
+    """Run the copying workflow."""
     typer.secho("\n=== COPY TOOL ===\n", bold=True)
 
     input_filepath = prompt_input_filepath("Enter the path to the file to be copied.")

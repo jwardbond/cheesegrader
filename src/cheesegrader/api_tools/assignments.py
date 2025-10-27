@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
 """Quercus Assignment API Client.
 
 This module provides the QuercusAssignment class for interacting with the
@@ -7,13 +9,10 @@ grades, and file uploads.
 TODO list:
     * Implement batch submission/grade updates.
     * Implement deletion of submission comments.
-    * Handle group assigments.
+    * Handle group assignments.
 
 Classes:
     QuercusAssignment: The primary client class for assignment management.
-
-:copyright: (c) 2025 by Jesse Ward-Bond.
-:license: MIT, see LICENSE for more details.
 """
 
 import re

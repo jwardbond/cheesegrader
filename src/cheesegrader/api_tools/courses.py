@@ -1,3 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+"""Quercus Course API Client.
+
+This module provides the QuercusCourse class for interacting with the
+Canvas/Quercus LMS API. Mainly useful for fetching student lists.
+
+Classes:
+    QuercusCourse: The primary client class for course management.
+"""
+
 import csv
 from pathlib import Path
 

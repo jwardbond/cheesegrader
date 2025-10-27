@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+"""Main CLI entry point for Cheesegrader."""
+
 import typer
 
 from cheesegrader.cli import copying, downloading, sorting, token, uploading
@@ -20,6 +24,7 @@ Help Menu:
 
 @app.command()
 def main() -> None:
+    """Main entry point for the Cheesegrader CLI."""
     typer.secho(
         "Welcome to 🧀 Cheesegrader! ctrl+c to quit",
         fg=typer.colors.YELLOW,
@@ -32,6 +37,7 @@ prompt = create_prompt(HELP_TEXT)
 
 
 def main_menu() -> None:
+    """Displays the main menu and handles user input."""
     while True:
         typer.echo()
         typer.echo("Available modules: ")

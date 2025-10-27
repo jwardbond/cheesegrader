@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+"""Utility functions for file operations in Cheesegrader."""
+
 import shutil
 import zipfile
 from pathlib import Path

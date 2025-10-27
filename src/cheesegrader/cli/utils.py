@@ -1,3 +1,19 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+
+"""CLI prompt utilities for CheeseGrader.
+
+This module provides reusable prompt and confirmation functions with built-in
+help messages and quit options. It includes utilities for:
+
+    - Prompting for and validating CSV files and directories
+    - Selecting columns from CSV headers
+    - Setting up Quercus courses and assignments
+    - Ensuring consistent CLI formatting and feedback with colors
+
+All prompts support entering 'h' for help or 'q' to quit.
+"""
+
 import csv
 import os
 import textwrap
@@ -78,17 +94,17 @@ def create_confirm(help_msg: str) -> Callable[..., str]:
             response = typer.prompt("", *args, **kwargs).strip().lower()
             typer.echo()
 
-            if response in ("y", "yes"):
-                return True
-            elif response in ("n", "no"):
-                return False
-            elif response == "h":
+            if response == "h":
                 typer.secho(help_msg, fg=HELP_FG)
                 typer.echo()
                 typer.secho("Press any key to continue", fg=PROMPT_FG, bg=HELP_BG, nl=False)
                 input()
             elif response == "q":
                 typer.Exit()
+            elif response in ("y", "yes"):
+                return True
+            elif response in ("n", "no"):
+                return False
             else:
                 typer.secho("Invalid input. Enter 'y', 'n', or 'h'.", fg=ERROR_FG)
 

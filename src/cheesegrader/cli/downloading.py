@@ -1,3 +1,19 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+
+"""Download tools for Quercus course data.
+
+This module provides CLI workflows for downloading student lists and
+assignment submissions from Quercus using the Canvas API. It supports:
+    • Downloading enrolled student lists as CSV files.
+    • Downloading student submissions (PDFs, Word docs, etc.) for assignments.
+
+Users are prompted for course and assignment IDs, output directories,
+and confirmation before any downloads occur.
+
+Intended to be run as a subcommand of the Cheesegrader CLI.
+"""
+
 from pathlib import Path
 
 import typer
@@ -44,6 +60,7 @@ confirm = create_confirm(HELP_TEXT)
 
 
 def run() -> None:
+    """Run the downloading workflow."""
     while True:
         typer.secho("\n=== DOWNLOAD TOOLS ===\n", bold=True)
 

@@ -1,3 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (c) 2025 Jesse Ward-Bond
+
+"""File sorting tool for CheeseGrader CLI.
+
+Sorts files in a source directory into subfolders based on a CSV mapping of
+filenames to folder names.
+
+Intended to be run as a subcommand of the Cheesegrader CLI.
+"""
+
 from pathlib import Path
 
 import typer
@@ -36,6 +47,7 @@ confirm = create_confirm(HELP_TEXT)
 
 
 def run() -> None:
+    """Run the sorting workflow."""
     typer.secho("\n=== SORTING TOOL ===\n", bold=True)
 
     while True:
@@ -44,7 +56,7 @@ def run() -> None:
 
         # Get map file
         student_data, headers, _ = prompt_get_csv(
-            "Enter the path to the .csv file containing the filename -> folder mapping."
+            "Enter the path to the .csv file containing the filename -> folder mapping.",
         )
 
         # Select the columns to use
