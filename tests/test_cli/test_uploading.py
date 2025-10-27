@@ -20,7 +20,7 @@ def test_prompt_get_csv(mocker: MockerFixture):
 
     prompt_mock = mocker.patch("typer.prompt")
     prompt_mock.side_effect = [
-        csv_path.resolve(),
+        str(csv_path.resolve()),
     ]
 
     expected_data = [
@@ -30,7 +30,7 @@ def test_prompt_get_csv(mocker: MockerFixture):
     ]
     expected_header_map = {"id": "id", "grade": "grade"}
 
-    data, path, header_map = prompt_get_csv(required_headers={"id", "grade"})
+    data, path, header_map = prompt_get_csv(required_headers=["id", "grade"])
 
     assert path.resolve() == csv_path.resolve()
     assert data == expected_data

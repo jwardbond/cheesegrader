@@ -204,11 +204,9 @@ def prompt_get_csv(required_headers: list[str]) -> tuple[list, Path, dict]:
         grades: list[dict]: A list of {header: value} dicts representing CSV rows.
     """
     while True:
-        path_str = prompt("Enter Student List CSV Path")
-        path_str = path_str.strip()
-        path_str = path_str.strip('"')
+        path_str = prompt("Enter Student List CSV Path").strip().strip('"')
         path = Path(path_str)
-        typer.secho("Added grade/student list: " + path.resolve(), fg=SUCCESS_FG)
+        typer.secho("Added grade/student list: " + str(path.resolve()), fg=SUCCESS_FG)
 
         # Validate filepath
         if not path.exists():
