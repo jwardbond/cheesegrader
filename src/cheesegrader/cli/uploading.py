@@ -97,9 +97,13 @@ def run() -> None:
             dir_list,
         ):
             if need_grades:
+                typer.echo("Uploading grades...")
                 upload_errors = assignment.bulk_upload_grades(grades)
+                typer.secho("Grade upload complete!", fg=SUCCESS_FG)
             if need_files:
+                typer.echo("Uploading files...")
                 upload_errors = assignment.bulk_upload_files(filepaths)
+                typer.secho("File upload complete!", fg=SUCCESS_FG)
 
             # Print upload errors
             if upload_errors:
@@ -139,9 +143,9 @@ def prompt_get_dirs() -> list[Path]:
         dir_str = prompt("Enter path to directory.").strip().strip('"')
         dirs.append(Path(dir_str))
 
-        typer.secho(f"Added directory: {dir_str}\n", fg=SUCCESS_FG)
+        typer.secho(f"Added directory: {dir_str}", fg=SUCCESS_FG)
 
-        add_more = confirm("Add another directory?", default=False, abort=True)
+        add_more = confirm("Add another directory?")
 
     return dirs
 
