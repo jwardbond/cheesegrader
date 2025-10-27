@@ -1,5 +1,6 @@
 import csv
 import os
+import textwrap
 from collections.abc import Callable
 from pathlib import Path
 
@@ -32,27 +33,28 @@ def create_prompt(help_msg: str) -> Callable[..., str]:
 
     def patched_prompt(*args, **kwargs) -> str:  # noqa: ANN002, ANN003
         prompt_text = args[0] if args else kwargs.get("text", "")
-        typer.echo()
-        typer.secho(prompt_text, fg=PROMPT_FG, bg=PROMPT_BG, nl=False)
 
         # Remove text from args so not duplicated
         if args:
             args = args[1:]
 
-        response = typer.prompt("", *args, **kwargs)
-        typer.echo()
+        while True:
+            typer.echo()
+            typer.secho(prompt_text, fg=PROMPT_FG, bg=PROMPT_BG, nl=False)
 
-        if isinstance(response, str):
-            if response.lower() == "h":
+            response = typer.prompt("", *args, **kwargs)
+            typer.echo()
+
+            # Loop if user enters help
+            if response in ("h", "H"):
                 typer.secho(help_msg, fg=HELP_FG)
                 typer.echo()
                 typer.secho("Press any key to continue", fg=PROMPT_FG, bg=HELP_BG, nl=False)
                 input()
-
-            if response.lower() == "q":
+            elif response in ("q", "Q"):
                 raise typer.Exit
-
-        return response
+            else:
+                return response
 
     return patched_prompt
 
@@ -82,6 +84,9 @@ def create_confirm(help_msg: str) -> Callable[..., str]:
                 return False
             elif response == "h":
                 typer.secho(help_msg, fg=HELP_FG)
+                typer.echo()
+                typer.secho("Press any key to continue", fg=PROMPT_FG, bg=HELP_BG, nl=False)
+                input()
             elif response == "q":
                 typer.Exit()
             else:
@@ -126,14 +131,14 @@ def prompt_get_csv(prompt_text: str) -> tuple[list, Path, dict]:
 
 def prompt_select_header(headers: list[str]) -> str:
     """Select a header (column) from a list."""
-    help_msg = """
+    help_msg = textwrap.dedent("""
     Help Menu:
         Enter the number corresponding to the column you want to select.
 
         ---
         Enter 'q' or press ctrl+c to quit at any time.
         Enter 'h' for help.
-    """
+    """)
     prompt = create_prompt(help_msg)
 
     while True:
@@ -148,14 +153,14 @@ def prompt_select_header(headers: list[str]) -> str:
 
 def prompt_input_dir(prompt_text: str) -> Path:
     """Prompt the user for a path to a directory and validate that it exists."""
-    help_msg = """
+    help_msg = textwrap.dedent("""
     Help Menu:
         Enter the full path to the desired directory.
 
         ---
         Enter 'q' or press ctrl+c to quit at any time.
         Enter 'h' for help.
-    """
+    """)
     prompt = create_prompt(help_msg)
 
     while True:
@@ -174,7 +179,7 @@ def prompt_input_dir(prompt_text: str) -> Path:
 
 def prompt_setup_course() -> QuercusCourse:
     """Prompt the user to set up a QuercusCourse object."""
-    help_msg = """
+    help_msg = textwrap.dedent("""
     Help Menu:
         Enter the Course ID for the Quercus course you want to set up.
 
@@ -183,7 +188,7 @@ def prompt_setup_course() -> QuercusCourse:
         ---
         Enter 'q' or press ctrl+c to quit at any time.
         Enter 'h' for help.
-    """
+    """)
     prompt = create_prompt(help_msg)
 
     typer.echo("Enter The Course ID.")
@@ -197,7 +202,7 @@ def prompt_setup_course() -> QuercusCourse:
 
 def prompt_setup_assignment(course: QuercusCourse) -> QuercusAssignment:
     """Prompt the user to set up a QuercusAssignment object."""
-    help_msg = """
+    help_msg = textwrap.dedent("""
     Help Menu:
         Enter the Assignment ID for the Quercus assignment you want to set up.
 
@@ -206,7 +211,7 @@ def prompt_setup_assignment(course: QuercusCourse) -> QuercusAssignment:
         ---
         Enter 'q' or press ctrl+c to quit at any time.
         Enter 'h' for help.
-    """
+    """)
     prompt = create_prompt(help_msg)
 
     typer.echo("Enter the Assignment ID.")
