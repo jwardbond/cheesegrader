@@ -1,5 +1,6 @@
 import shutil
 from pathlib import Path
+import zipfile
 
 
 def copy_rename(
@@ -39,7 +40,7 @@ def copy_rename(
         shutil.copyfile(input_filepath, output_dir / filename)
 
 
-def filesorter(
+def sort_files(
     sort_dir: Path,
     dest_dir: Path,
     sort_map: dict[str, str],
@@ -75,3 +76,33 @@ def filesorter(
             shutil.copyfile(file, output_dir / file.name)
 
     return missing_files
+
+
+def replace_filename_substr(input_dir: Path, rename_map: dict[str, str]) -> None:
+    """Replaces portions of filenames in a directory based on a mapping.
+
+    Useful when filenames contain an id number that needs to be replaced with another.
+
+    Args:
+        input_dir (Path): The directory containing files to be renamed.
+        rename_map (dict[str, str]): A mapping of old substrings to new substrings for renaming.
+    """
+    for old_substr, new_substr in rename_map.items():
+        for file in input_dir.glob(f"*{old_substr}*"):
+            new_name = file.name.replace(old_substr, new_substr)
+            new_path = input_dir / new_name
+            file.rename(new_path)
+
+
+def unzip_dir(input_file: Path) -> None:
+    """Unzips a zip file to a directory.
+
+    Args:
+        input_file (Path): The zip file to be extracted.
+    """
+    output_dir = input_file.parent / (input_file.stem)
+
+    with zipfile.ZipFile(input_file, "r") as zip_ref:
+        zip_ref.extractall(output_dir)
+
+    return output_dir

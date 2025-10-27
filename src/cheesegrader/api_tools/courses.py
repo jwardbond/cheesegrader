@@ -1,4 +1,6 @@
-import pandas as pd
+import csv
+from pathlib import Path
+
 import requests as r
 
 
@@ -30,56 +32,72 @@ class QuercusCourse:
             "students": f"https://q.utoronto.ca/api/v1/courses/{course_id}/students",
         }
 
-        self.course = self._get_course()
-        self.students = self._get_student_list()
-
     @property
     def course_name(self) -> str:
         """Returns the name of the course."""
         return self.course["name"]
 
-    def generate_student_dataframe(self) -> pd.DataFrame:
-        """Generates a dataframe of student information for the course.
+    @property
+    def students(self) -> list[dict]:
+        """Returns the list of students enrolled in the course."""
+        if not hasattr(self, "_students"):
+            url = self.endpoints["students"]
+            response = r.get(url, headers=self.auth_key, timeout=10)
+            self._students = remove_duplicates(response.json())
+        return self._students
 
-        Returns:
-            pd.DataFrame: A dataframe with the following columns
-                - sis_user_id: The student's unique identifier on Quercus
-                - id: The student's UTORid.
-                - integration_id: Usually the student number
-                - name: The full name of the student (First Middle Last)
-                - sortable_name: A format of the name suitable for sorting (Last, First Middle)
-                - fname: The first name of the student
-                - lname: The last name of the student
+    @property
+    def course(self) -> dict:
+        """Returns the course information."""
+        if not hasattr(self, "_course"):
+            url = self.endpoints["course"]
+            response = r.get(url, headers=self.auth_key, timeout=10)
+            self._course = response.json()
+        return self._course
+
+    def download_student_list(self, destination: Path) -> None:
+        """Generates and saves a dataframe of student information for the course.
+
+        Attributes:
+            destination (Path): The file path where the student list CSV will be saved.
         """
-        raw_df = pd.DataFrame.from_records(self.students)
-        cleaned_df = raw_df.drop_duplicates()
-        cleaned_df = cleaned_df.loc[
-            :,
-            [
-                "sis_user_id",
-                "id",
-                "integration_id",
-                "name",
-                "sortable_name",
-            ],
-        ]
+        fields = ["sis_user_id", "id", "integration_id", "name", "sortable_name"]
 
-        cleaned_df["fname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[1])
-        cleaned_df["lname"] = cleaned_df["sortable_name"].apply(lambda s: s.split(", ")[0])
+        rows = []
+        for s in self.students:
+            row = {k: s.get(k, "") for k in fields}
 
-        print(f"Generated student dataframe and dropped {len(raw_df) - len(cleaned_df)} duplicate records")
+            if ", " in row["sortable_name"]:
+                row["lname"], row["fname"] = row["sortable_name"].split(", ")
 
-        return cleaned_df
+            row["utorid"] = s.get("sis_user_id", "")
+            rows.append(row)
 
-    def _get_course(self):
-        # based on this post: https://canvas.instructure.com/doc/api/assignments.html#method.assignments_api.show
-        url = self.endpoints["course"]
-        response = r.get(url, headers=self.auth_key)
+        # Write to csv
+        fields = [*fields, "fname", "lname", "utorid"]
+        with destination.open("w", newline="", encoding="utf-8") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
 
-        return response.json()
+    def get_id_utorid_map(self) -> dict[str, str]:
+        """Returns a mapping of student Canvas IDs to UtorIDs."""
+        id_utorid_map = {}
+        for s in self.students:
+            canvas_id = str(s.get("id", ""))
+            utorid = s.get("sis_user_id", "")
+            id_utorid_map[canvas_id] = utorid
 
-    def _get_student_list(self):
-        url = self.endpoints["students"]
-        response = r.get(url, headers=self.auth_key)
+        return id_utorid_map
 
-        return response.json()
+
+def remove_duplicates(data: list[dict]) -> list[dict]:
+    """Removes duplicate student entries based on their Canvas ID."""
+    seen_ids = set()
+    unique_data = []
+    for entry in data:
+        canvas_id = entry.get("id")
+        if canvas_id not in seen_ids:
+            seen_ids.add(canvas_id)
+            unique_data.append(entry)
+    return unique_data

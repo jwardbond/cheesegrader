@@ -16,7 +16,7 @@ Classes:
 :license: MIT, see LICENSE for more details.
 """
 
-import pathlib
+from pathlib import Path
 
 import requests as r
 
@@ -76,40 +76,26 @@ class QuercusAssignment:
 
         return response.json()
 
-    # def _get_groups(self) -> dict | None:
-    #     if self.is_group:
-    #         url = self.endpoints["groups"] + str(self.assignment["group_category_id"]) + self.endpoints["groups_suffix"]
+    def _get_submission_download_url(self) -> str:
+        """Returns the submission endpoint URL for the assignment."""
+        url = self.endpoints["assignment"]
+        response = r.get(url, headers=self.auth_key, timeout=10)
 
-    #         data = {"include": ["users"]}
-    #         params = {"per_page": 200}
+        return response.json()["submissions_download_url"]
 
-    #         response = r.get(url, params=params, data=data, headers=self.auth_key, timeout=10)
+    def download_submissions_zip(self, destination: Path) -> None:
+        """Downloads the submissions zip file for the assignment.
 
-    #         group_data = response.json()
+        Args:
+            destination (Path): The path where the zip file will be saved.
+        """
+        url = self._get_submission_download_url()
+        response = r.get(url, headers=self.auth_key, timeout=10)
 
-    #         group_ids = {}
+        destination.parent.mkdir(parents=True, exist_ok=True)
 
-    #         if len(group_data) > 0:
-    #             for group in group_data:
-    #                 group_ids[group["name"]] = group["id"]
-
-    #         links = response.headers["Link"].split(",")
-
-    #         while len(links) > 1 and "next" in links[1]:
-    #             next_url = links[1].split("<")[1].split(">")[0].strip()
-    #             response = r.get(next_url, headers=self.auth_key, timeout=10)
-
-    #             group_data = response.json()
-
-    #             if len(group_data) > 0:
-    #                 for group in group_data:
-    #                     group_ids[group["name"]] = group["id"]
-
-    #             links = response.headers["Link"].split(",")
-
-    #         return group_ids
-
-    #     return None
+        with destination.open("wb") as f:
+            f.write(response.content)
 
     def group_data_parser(self, group_info: dict) -> list:
         """Given group info (ID, grade), returns individual student info (sis_id, group grade).
@@ -161,7 +147,7 @@ class QuercusAssignment:
 
         return response.ok
 
-    def upload_file(self, sis_id: int, filepath: pathlib.Path) -> None:
+    def upload_file(self, sis_id: int, filepath: Path) -> None:
         """Uploads a single file for a given user.
 
         The ids must be the sis_user_id for the user. For UofT this is their UTORid.
@@ -171,7 +157,7 @@ class QuercusAssignment:
 
         Args:
             sis_id (int): Quercus sis_id for the user. For UofT this is the same as their UTORid.
-            filepath (pathlib.Path): Path to the file to be uploaded
+            filepath (Path): Path to the file to be uploaded
         Returns:
             bool: True if the final linkig was successful (HTTP status 2xx), False otherwise.
         """
@@ -214,3 +200,38 @@ class QuercusAssignment:
         )
 
         return response.ok
+
+    # def _get_groups(self) -> dict | None:
+    #     if self.is_group:
+    #         url = self.endpoints["groups"] + str(self.assignment["group_category_id"]) + self.endpoints["groups_suffix"]
+
+    #         data = {"include": ["users"]}
+    #         params = {"per_page": 200}
+
+    #         response = r.get(url, params=params, data=data, headers=self.auth_key, timeout=10)
+
+    #         group_data = response.json()
+
+    #         group_ids = {}
+
+    #         if len(group_data) > 0:
+    #             for group in group_data:
+    #                 group_ids[group["name"]] = group["id"]
+
+    #         links = response.headers["Link"].split(",")
+
+    #         while len(links) > 1 and "next" in links[1]:
+    #             next_url = links[1].split("<")[1].split(">")[0].strip()
+    #             response = r.get(next_url, headers=self.auth_key, timeout=10)
+
+    #             group_data = response.json()
+
+    #             if len(group_data) > 0:
+    #                 for group in group_data:
+    #                     group_ids[group["name"]] = group["id"]
+
+    #             links = response.headers["Link"].split(",")
+
+    #         return group_ids
+
+    #     return None
