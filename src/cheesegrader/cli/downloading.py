@@ -1,12 +1,17 @@
-import csv
-import os
 from pathlib import Path
 
 import typer
 
 from cheesegrader.api_tools import QuercusAssignment, QuercusCourse
-from cheesegrader.cli.utils import ERROR_FG, SUCCESS_FG, WARN_FG, create_confirm, create_prompt
-from cheesegrader.utils import unzip_dir
+from cheesegrader.cli.utils import (
+    ERROR_FG,
+    SUCCESS_FG,
+    create_confirm,
+    create_prompt,
+    prompt_input_dir,
+    prompt_setup_assignment,
+    prompt_setup_course,
+)
 
 HELP_TEXT = """
 Help Menu:
@@ -38,20 +43,20 @@ prompt = create_prompt(HELP_TEXT)
 confirm = create_confirm(HELP_TEXT)
 
 
-def run():
+def run() -> None:
     while True:
-        typer.secho("\n\n=== DOWNLOAD TOOLS ===", bold=True)
+        typer.secho("\n=== DOWNLOAD TOOLS ===", bold=True)
 
         typer.echo()
         typer.echo("Available downloading modules: ")
         typer.echo("\t[0] Student Lists")
-        # typer.echo("\t[1] Student Submissions")
+        typer.echo("\t[1] Student Submissions")
 
         typer.echo("\t---")
         typer.echo("\t[h] Help")
         typer.echo("\t[q] Quit")
 
-        choice = prompt("What do you want to do?", type=str)
+        choice = prompt("What do you want to download?", type=str)
 
         match choice:
             case "0":
@@ -68,73 +73,56 @@ def run():
 
 def download_student_list() -> None:
     """Download the student list for a course."""
-    course = prompt_setup_course()
-    typer.echo("Enter the output folder for the student list.")
-    output_dir = prompt_input_path("Output folder:")
-    output_path = output_dir / f"{course.course_id}_student_list.csv"
+    while True:
+        # Setup course
+        course = prompt_setup_course()
 
-    typer.secho("Saving student list...")
-    course.download_student_list(output_path)
-    typer.secho(f"Saved student list to {output_path}", fg=SUCCESS_FG)
+        # Setup output path
+        output_dir = prompt_input_dir("Enter the output directory for the student list.")
+        output_path = output_dir / f"{course.course_id}_student_list.csv"
+
+        # Confirm operation
+        if prompt_confirm_download_student_list(course, output_path):
+            typer.secho("Saving student list...")
+            course.download_student_list(output_path)
+            typer.secho(f"Saved student list to {output_path}", fg=SUCCESS_FG)
+            return
 
 
 def download_submissions() -> None:
     """Download student submissions for an assignment."""
-    # Setup course and assignment
-    course = prompt_setup_course()
-    assignment = prompt_setup_assignment(course)
-
-    # Download submissions zip
-    typer.echo("Enter the output path for the submissions zip file (.zip)")
-    output_dir = prompt_input_path("Output path:")
-    zip_path = output_dir / f"{assignment.assignment_id}_submissions.zip"
-
-    typer.secho("Downloading submissions...")
-    assignment.download_submissions_zip(zip_path)
-    typer.secho(f"Downloaded submissions to {zip_path}", fg=SUCCESS_FG)
-
-    # Unzip submissions
-    typer.secho("Unzipping submissions...")
-    unzip_dir(zip_path)
-    typer.secho(f"Unzipped submissions to {zip_path / zip_path.stem}", fg=SUCCESS_FG)
-
-    # Replace Canvas IDs with UTORIDs
-    typer.secho("Renaming submission files...")
-    id_utorid_map = course.get_id_utorid_map()
-    assignment.rename_submissions(zip_path.parent / zip_path.stem, id_utorid_map)
-    typer.secho("Renamed submission files.", fg=SUCCESS_FG)
-
-
-def prompt_input_path(prompt_text: str) -> Path:
-    """Prompt the user for a path and validate that it exists."""
     while True:
-        path_str = prompt(prompt_text).strip().strip('"')
-        path = Path(path_str).resolve()
-        if path.exists():
-            return path
+        # Setup course and assignment
+        course = prompt_setup_course()
+        assignment = prompt_setup_assignment(course)
 
-        typer.secho("Path does not exist!", fg=WARN_FG)
-        typer.secho("Creating directory...", fg=WARN_FG)
-        path.mkdir(parents=True, exist_ok=True)
-        typer.secho(f"Created directory at {path}", fg=SUCCESS_FG)
-        return path
+        # Setup output directory
+        output_dir = prompt_input_dir("Enter the output directory for the student submissions.")
+        output_dir = output_dir / f"{course.course_id}_{assignment.assignment_id}_submissions"
+        output_dir.mkdir(parents=True, exist_ok=True)
 
-
-def prompt_setup_course() -> QuercusCourse:
-    """Prompt the user to set up a QuercusCourse object."""
-    course_id = prompt("Enter Course ID")
-    typer.echo("Loading course...")
-    course = QuercusCourse(course_id, token=os.getenv("CG_TOKEN"))
-    typer.secho(f"Loaded course: {course.course_name} ({course_id})", fg=SUCCESS_FG)
-
-    return course
+        # Confirm operation
+        if prompt_confirm_download_submissions(course, assignment, output_dir):
+            typer.secho("Downloading submissions...")
+            assignment.download_submissions(output_dir)
+            typer.secho(f"Downloaded submissions to {output_dir}/submissions", fg=SUCCESS_FG)
+            return
 
 
-def prompt_setup_assignment(course: QuercusCourse) -> QuercusAssignment:
-    """Prompt the user to set up a QuercusAssignment object."""
-    assignment_id = prompt("Enter Assignment ID")
-    typer.echo("Loading assignment...")
-    assignment = QuercusAssignment(course.course_id, assignment_id, token=os.getenv("CG_TOKEN"))
-    typer.secho(f"Loaded assignment: {assignment.assignment_name} ({assignment_id})", fg=SUCCESS_FG)
+def prompt_confirm_download_submissions(course: QuercusCourse, assignment: QuercusAssignment, output_dir: Path) -> bool:
+    """Prompt the user to confirm downloading submissions."""
+    typer.echo("\nPlease confirm the following information:")
+    typer.secho(f"\tCourse: {course.course_name} ({course.course_id})", fg=SUCCESS_FG)
+    typer.secho(f"\tAssignment: {assignment.assignment_name} ({assignment.assignment_id})", fg=SUCCESS_FG)
+    typer.secho(f"\tOutput Directory: {output_dir}", fg=SUCCESS_FG)
 
-    return assignment
+    return confirm("Is this information correct?")
+
+
+def prompt_confirm_download_student_list(course: QuercusCourse, output_path: Path) -> bool:
+    """Prompt the user to confirm downloading the student list."""
+    typer.echo("\nPlease confirm the following information:")
+    typer.secho(f"\tCourse: {course.course_name} ({course.course_id})", fg=SUCCESS_FG)
+    typer.secho(f"\tOutput File: {output_path}", fg=SUCCESS_FG)
+
+    return confirm("Is this information correct?")

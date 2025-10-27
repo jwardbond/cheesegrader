@@ -16,9 +16,15 @@ Classes:
 :license: MIT, see LICENSE for more details.
 """
 
+import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import requests as r
+from tqdm import tqdm
+
+from cheesegrader.api_tools.courses import QuercusCourse
+from cheesegrader.utils import download_file
 
 
 class QuercusAssignment:
@@ -28,6 +34,7 @@ class QuercusAssignment:
 
     Attributes:
         course_id (str, int): The course number on Quercus
+        token (str): The raw authentication token.
         auth_key (dict): The Authorization header dictionary for Canvas API requests. i.e. {'Authorization': 'Bearer <token>'}
         endpoints (dict): A collection of API endpoint URLs related to the assignment.
         assignment (dict): The assignment information fetched from the API.
@@ -44,10 +51,12 @@ class QuercusAssignment:
         """
         self.course_id = course_id
         self.assignment_id = assignment_id
+        self.token = token
         self.auth_key = {"Authorization": f"Bearer {token}"}
         self.endpoints = {
             "course": f"https://q.utoronto.ca/api/v1/courses/{course_id}/",
             "assignment": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}",
+            "submissions": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}/submissions?per_page=100",
             "submission": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}/submissions/sis_user_id:",
             "submission_comments_suffix": "/comments/files",
             "groups": "https://q.utoronto.ca/api/v1/group_categories/",
@@ -55,10 +64,16 @@ class QuercusAssignment:
             "group_users": "https://q.utoronto.ca/api/v1/groups/",
             "group_users_suffix": "/users",
         }
-
-        # Fetch assignment info
-        self.assignment = self._get_assignment()
         # self.group_ids = self._get_groups() # TODO
+
+    @property
+    def assignment(self) -> dict:
+        """Returns the assignment information."""
+        if not hasattr(self, "_assignment"):
+            url = self.endpoints["assignment"]
+            response = r.get(url, headers=self.auth_key, timeout=10).json()
+            self._assignment = response
+        return self._assignment
 
     @property
     def assignment_name(self) -> str:
@@ -70,32 +85,51 @@ class QuercusAssignment:
         """Returns whether the assignment is a group assignment."""
         return self.assignment["group_category_id"] is not None
 
-    def _get_assignment(self):
-        url = self.endpoints["assignment"]
-        response = r.get(url, headers=self.auth_key, timeout=10)
+    @property
+    def course(self) -> QuercusCourse:
+        """Returns the QuercusCourse object for the assignment's course."""
+        if not hasattr(self, "_course"):
+            self._course = QuercusCourse(self.course_id, token=self.token)
+        return self._course
 
-        return response.json()
-
-    def _get_submission_download_url(self) -> str:
-        """Returns the submission endpoint URL for the assignment."""
-        url = self.endpoints["assignment"]
-        response = r.get(url, headers=self.auth_key, timeout=10)
-
-        return response.json()["submissions_download_url"]
-
-    def download_submissions_zip(self, destination: Path) -> None:
+    def download_submissions(self, destination: Path) -> None:
         """Downloads the submissions zip file for the assignment.
 
         Args:
             destination (Path): The path where the zip file will be saved.
         """
-        url = self._get_submission_download_url()
+        url = self.endpoints["submissions"]
         response = r.get(url, headers=self.auth_key, timeout=10)
+        destination.mkdir(parents=True, exist_ok=True)
 
-        destination.parent.mkdir(parents=True, exist_ok=True)
+        # Ensure filenames contain utorid
+        id_utorid_map = self.course.get_id_utorid_map()
 
-        with destination.open("wb") as f:
-            f.write(response.content)
+        # Loop through api pages and construct submissions list
+        submissions = []
+        while "next" in response.links:
+            # Get list of file urls and desired filepaths
+            for submission in response.json():
+                for attachment in submission.get("attachments", []):
+                    url = attachment["url"]
+
+                    user_id = str(submission["user_id"])
+                    utorid = str(id_utorid_map.get(user_id, user_id))
+
+                    filename = utorid + "_" + attachment["display_name"]
+
+                    # Because students insert crazy symbols in filenames
+                    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", filename).strip().rstrip(". ")
+                    filepath = destination / filename
+
+                    submissions.append({"path": filepath, "url": url})
+            response = r.get(response.links["next"]["url"], headers=self.auth_key, timeout=10)
+
+        # Download the files to the output directory
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(download_file, sub["url"], sub["path"]) for sub in submissions]
+            for future in tqdm(as_completed(futures), total=len(futures)):
+                future.result()
 
     def group_data_parser(self, group_info: dict) -> list:
         """Given group info (ID, grade), returns individual student info (sis_id, group grade).
@@ -200,6 +234,56 @@ class QuercusAssignment:
         )
 
         return response.ok
+
+    def bulk_upload_grades(self, grades: dict[str, float]) -> list[str]:
+        """Posts grades to Quercus for the given students.
+
+        Args:
+            grades (dict[str, float]): A dictionary mapping SIS IDs (str) to grades (float).
+                SIS IDs are typically UTORids for UofT students.
+
+        Returns:
+            list[str]: A list of error messages for grades that failed to upload.
+        """
+        error_list = []
+        for utorid, grade in tqdm(grades.items()):
+            if not grade:
+                error_list.append(f"{utorid}: \t Missing grade")
+                continue
+
+            try:
+                self.post_grade(utorid, grade)
+            except Exception:  # noqa: BLE001
+                error_list.append(f"{utorid}: \t Missing student or post failed")
+
+        return error_list
+
+    def bulk_upload_files(
+        self,
+        student_files: dict[str, list[Path]],
+    ) -> list[str]:
+        """Finds files for the given IDs in the specified directories and uploads them as submissions.
+
+        Args:
+            student_files (dict): A dictionary mapping SIS IDs (str) to lists of file paths (Path).
+                SIS IDs are typically UTORids for UofT students.
+
+        Returns:
+            list[str]: A list of error messages for files that were not found or failed to upload.
+        """
+        error_list = []
+        for student, files in tqdm(student_files.items()):
+            if not files:
+                error_list.append(f"{student}: \t No files found for upload")
+                continue
+
+            for file in files:
+                try:
+                    self.upload_file(student, file)
+                except Exception:  # noqa: BLE001
+                    error_list.append(f"{student}: \t Upload failed for {file.name}")
+
+        return error_list
 
     # def _get_groups(self) -> dict | None:
     #     if self.is_group:
