@@ -1,12 +1,19 @@
-import csv
-import os
+from enum import Enum
 from pathlib import Path
 
 import typer
 
 from cheesegrader.api_tools import QuercusAssignment, QuercusCourse
-from cheesegrader.cli.utils import ERROR_FG, SUCCESS_FG, WARN_FG, create_confirm, create_prompt
-from cheesegrader.utils import UploadMode, upload_files, upload_grades
+from cheesegrader.cli.utils import (
+    SUCCESS_FG,
+    create_confirm,
+    create_prompt,
+    prompt_get_csv,
+    prompt_select_header,
+    prompt_setup_assignment,
+    prompt_setup_course,
+)
+from cheesegrader.utils import search_dirs
 
 HELP_TEXT = """
 Help Menu:
@@ -38,70 +45,69 @@ prompt = create_prompt(HELP_TEXT)
 confirm = create_confirm(HELP_TEXT)
 
 
+class UploadMode(Enum):
+    """Defines the allowed modes for the upload workflow."""
+
+    GRADES = 0
+    FILES = 1
+    BOTH = 2
+
+
 def run() -> None:
-    typer.secho("=== UPLOAD TOOL ===", bold=True)
+    typer.secho("\n=== UPLOAD TOOL ===\n", bold=True)
 
     while True:
-        # Set up course
-        course_id = prompt("Enter Course ID")
-        typer.echo("Loading course...")
-        course = QuercusCourse(course_id, token=os.getenv("CG_TOKEN"))
-        typer.secho(f"Loaded course: {course.course_name} ({course_id})", fg=SUCCESS_FG)
-
-        # Set up assignment
-        assignment_id = prompt("Enter Assignment ID")
-        typer.echo("Loading assignment...")
-        assignment = QuercusAssignment(course_id, assignment_id, token=os.getenv("CG_TOKEN"))
-        typer.secho(f"Loaded assignment: {assignment.assignment_name} ({assignment_id})", fg=SUCCESS_FG)
+        course = prompt_setup_course()
+        assignment = prompt_setup_assignment(course)
 
         # Select mode and upload
-        mode = prompt_mode()
-        mode = UploadMode(mode)
-        upload_errors = []
-        match mode:
-            case UploadMode.GRADES:
-                grades_list, grades_path, header_map = prompt_get_csv(["id", "grade"])
-                if prompt_confirm_grade_upload(course, assignment, grades_path, header_map):
-                    errors = upload_grades(assignment, grades_list)
-                    upload_errors.extend(errors)
-                else:
-                    continue
+        mode = UploadMode(prompt_mode())
 
-            case UploadMode.FILES:
-                id_list, id_path, header_map = prompt_get_csv(["id"])
-                dir_list = prompt_get_dirs()
+        # Get student file
+        data, headers, csv_path = prompt_get_csv("Enter the path to the student list .csv file.")
 
-                if prompt_confirm_file_upload(course, assignment, id_path, header_map, dir_list):
-                    errors = upload_files(assignment, id_list, dir_list)
-                    typer.echo()
-                else:
-                    continue
+        # Get utorid column
+        typer.echo("Select which column contains the UTORID")
+        id_col = prompt_select_header(headers)
 
-            case UploadMode.BOTH:
-                grades_list, grades_path, header_map = prompt_get_csv({"id", "grade"})
-                dir_list = prompt_get_dirs()
+        need_grades = mode in (UploadMode.GRADES, UploadMode.BOTH)
+        need_files = mode in (UploadMode.FILES, UploadMode.BOTH)
 
-                if prompt_confirm_grade_upload(course, assignment, grades_path, header_map):
-                    grade_errors = upload_grades(assignment, grades_list)
-                    upload_errors.extend(grade_errors)
-                    typer.echo()
-                else:
-                    continue
+        if need_grades:
+            typer.echo("Select which column contains the grades.")
+            grade_col = prompt_select_header(headers)
+            grades = {data[id_col]: float(data[grade_col]) for data in data}
+        else:
+            grade_col = None
 
-                if prompt_confirm_file_upload(course, assignment, grades_path, header_map, dir_list):
-                    file_errors = upload_files(assignment, grades_list, dir_list)
-                    upload_errors.extend(file_errors)
-                    typer.echo()
-                else:
-                    continue
+        if need_files:
+            dir_list = prompt_get_dirs()
+            filepaths = {d[id_col]: search_dirs(dir_list, d[id_col]) for d in data}
+        else:
+            dir_list = None
 
-        # Print upload errors
-        if upload_errors:
-            typer.echo("The following uploads failed:")
-            for emsg in upload_errors:
-                typer.echo(emsg)
+        # Confirm and upload
+        if prompt_confirm_upload(
+            course,
+            assignment,
+            mode,
+            csv_path,
+            id_col,
+            grade_col,
+            dir_list,
+        ):
+            if need_grades:
+                upload_errors = assignment.bulk_upload_grades(grades)
+            if need_files:
+                upload_errors = assignment.bulk_upload_files(filepaths)
 
-        return
+            # Print upload errors
+            if upload_errors:
+                typer.echo("The following uploads failed:")
+                for emsg in upload_errors:
+                    typer.echo(emsg)
+
+            return
 
 
 def prompt_mode() -> str:
@@ -112,131 +118,53 @@ def prompt_mode() -> str:
     typer.echo("\t[2] Both Grades and Files")
 
     mode = prompt("Select upload mode", type=int)
-    # print(mode)
+
     return mode
 
 
 def prompt_get_dirs() -> list[Path]:
     """Prompt user to input directories to search for files.
 
+    Args:
+        prompt_text (str): The prompt text to display to the user.
+
     Returns:
         list[Path]: A list of directory paths.
     """
     dirs = []
     add_more = True
-    while add_more:
-        dir_str = prompt("Enter the path to the directory you would like to search for files")
-        dir_str = dir_str.strip()
-        dir_str = dir_str.strip('"')
+    typer.echo("Enter the directories to search for student files. One at a time.")
 
+    while add_more:
+        dir_str = prompt("Enter path to directory.").strip().strip('"')
         dirs.append(Path(dir_str))
 
-        typer.secho("Added directory: " + dir_str, fg=SUCCESS_FG)
+        typer.secho(f"Added directory: {dir_str}\n", fg=SUCCESS_FG)
 
         add_more = confirm("Add another directory?", default=False, abort=True)
 
     return dirs
 
 
-def prompt_confirm_grade_upload(
+def prompt_confirm_upload(
     course: QuercusCourse,
     assignment: QuercusAssignment,
-    grade_file: Path,
-    header_map: list[dict[str, str]],
+    mode: UploadMode,
+    csv_path: Path,
+    id_col: str,
+    grade_col: str | None,
+    dir_list: list[Path] | None,
 ) -> bool:
-    """Display final details before uploading grades."""
+    """Display final details before uploading."""
     typer.echo("Please confirm the following details before uploading:")
-    typer.echo(f"\tCourse:  {course.course_name}")
-    typer.echo(f"\tAssigment:  {assignment.assignment_name}")
-    typer.echo()
-    typer.echo(f"\tGrade file:  {grade_file}")
-    typer.echo(f"\t\tID column: {header_map['id']}")
-    typer.echo(f"\t\tGrade column: {header_map['grade']}")
+    typer.echo(f"\tCourse: {course.course_name}")
+    typer.echo(f"\tAssignment: {assignment.assignment_name}")
+    typer.echo(f"\tUpload mode: {mode.name}")
+    typer.echo(f"\tStudent file: {csv_path}")
+    typer.echo(f"\tID column: {id_col}")
+    if grade_col:
+        typer.echo(f"\tGrade column: {grade_col}")
+    if dir_list:
+        typer.echo(f"\tDirectories to search: {', '.join(str(d) for d in dir_list)}")
 
-    response = confirm("Confirm?")
-
-    return response
-
-
-def prompt_confirm_file_upload(
-    course: QuercusCourse,
-    assignment: QuercusAssignment,
-    id_file: Path,
-    header_map: list[dict[str, str]],
-    dirs: list[Path],
-) -> bool:
-    """Display final details before uploading grades."""
-    typer.echo("Please confirm the following details before uploading:")
-    typer.echo(f"\tCourse name:  {course.course_name}")
-    typer.echo(f"\tAssigmennt name:  Loaded assignment: {assignment.assignment_name}")
-    typer.echo(f"\tID file:  {id_file}")
-    typer.echo(f"\tID column: {header_map['id']}")
-    typer.echo(f"\tLooking for files with {header_map['id']} in name within:")
-    for d in dirs:
-        typer.echo(f"\t\t{d.absolute()}")
-
-    response = confirm("Confirm?")
-
-    return response
-
-
-def prompt_select_header(headers: list[str]) -> str:
-    """Select a header (column) from a list."""
-    while True:
-        for i, h in enumerate(headers):
-            typer.echo(f"\t[{i}] {h}")
-        selection = prompt("Select column:", type=int)
-
-        if selection in range(len(headers)):
-            return headers[selection]
-        typer.secho("Invalid selection", fg=ERROR_FG)
-
-
-def prompt_get_csv(required_headers: list[str]) -> tuple[list, Path, dict]:
-    """Prompt user to input a CSV file path and returns its contents as a list of dicts.
-
-    If the csv is missing required headers, prompts the user to map existing headers to required ones.
-
-    Args:
-        required_headers (set[str]): A set of required column headers.
-
-    Returns:
-        grades: list[dict]: A list of {header: value} dicts representing CSV rows.
-    """
-    while True:
-        path_str = prompt("Enter Student List CSV Path").strip().strip('"')
-        path = Path(path_str)
-        typer.secho("Added grade/student list: " + str(path.resolve()), fg=SUCCESS_FG)
-
-        # Validate filepath
-        if not path.exists():
-            typer.secho("File does not exist!", fg=typer.colors.RED)
-            continue
-        if path.suffix.lower() != ".csv":
-            typer.secho("File is not a CSV!", fg=typer.colors.RED)
-            continue
-
-        # Read CSV contents
-        with path.open("r", newline="", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-            headers = reader.fieldnames
-            data = list(reader)
-
-        # Validate headers and prompt if missing
-        header_map = {}
-        for required_header in required_headers:
-            if required_header not in headers:
-                typer.secho(f"CSV is missing required header: {required_header}", fg=WARN_FG)
-                typer.secho(f"Please select the column name to use in place of {required_header}:", fg=WARN_FG)
-                alternate_header = prompt_select_header(headers)
-                header_map[required_header] = alternate_header
-            else:
-                header_map[required_header] = required_header
-
-        # Clean data to only include required headers
-        cleaned_data = []
-        for row in data:
-            cleaned_row = {required_name: row[csv_name] for required_name, csv_name in header_map.items()}
-            cleaned_data.append(cleaned_row)
-
-        return cleaned_data, path, header_map
+    return confirm("Is this information correct?")

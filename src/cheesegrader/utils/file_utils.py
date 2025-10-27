@@ -1,6 +1,8 @@
 import shutil
-from pathlib import Path
 import zipfile
+from pathlib import Path
+
+import requests as r
 
 
 def copy_rename(
@@ -94,6 +96,21 @@ def replace_filename_substr(input_dir: Path, rename_map: dict[str, str]) -> None
             file.rename(new_path)
 
 
+def download_file(url: str, output_path: Path) -> None:
+    """Downloads a file from a URL to a specified output path.
+
+    Args:
+        url (str): The URL of the file to be downloaded.
+        output_path (Path): The path where the downloaded file will be saved.
+    """
+    response = r.get(url, stream=True, timeout=10)
+    response.raise_for_status()
+
+    with output_path.open("wb") as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
+
+
 def unzip_dir(input_file: Path) -> None:
     """Unzips a zip file to a directory.
 
@@ -106,3 +123,22 @@ def unzip_dir(input_file: Path) -> None:
         zip_ref.extractall(output_dir)
 
     return output_dir
+
+
+def search_dirs(directories: list[Path], substr: str) -> list[Path]:
+    """Searches a list of directories for files matching a given utorid.
+
+    Args:
+        directories (list[Path]): A list of directories to search.
+        substr (str): The utorid to search for in filenames.
+
+    Returns:
+        list[Path]: A list of file paths that match the given utorid.
+    """
+    matched_files = []
+
+    for directory in directories:
+        matches = directory.glob(f"*{substr}*")
+        matched_files.extend(matches)
+
+    return matched_files

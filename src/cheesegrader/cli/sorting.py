@@ -1,10 +1,17 @@
-import csv
 from pathlib import Path
 
 import typer
 
-from cheesegrader.cli.utils import ERROR_FG, SUCCESS_FG, WARN_FG, create_confirm, create_prompt
-from cheesegrader.utils import filesorter
+from cheesegrader.cli.utils import (
+    SUCCESS_FG,
+    WARN_FG,
+    create_confirm,
+    create_prompt,
+    prompt_get_csv,
+    prompt_input_dir,
+    prompt_select_header,
+)
+from cheesegrader.utils import sort_files
 
 HELP_TEXT = """
 Help Menu:
@@ -29,20 +36,16 @@ confirm = create_confirm(HELP_TEXT)
 
 
 def run() -> None:
-    typer.secho("=== SORTING TOOL ===", bold=True)
+    typer.secho("\n=== SORTING TOOL ===\n", bold=True)
 
     while True:
         # Get source directory
-        typer.echo("Enter the folder containing the files to be sorted.")
-        source_dir = prompt_input_path("Enter source directory")
-
-        # Get destination directory
-        typer.secho("Enter the destination folder for sorted files.")
-        dest_dir = prompt_input_path("Enter destination directory")
+        source_dir = prompt_input_dir("Enter the source directory containing the files to be sorted.")
 
         # Get map file
-        typer.echo("Enter the csv containing the filename -> folder mapping.")
-        student_data, headers = prompt_get_csv()
+        student_data, headers, _ = prompt_get_csv(
+            "Enter the path to the .csv file containing the filename -> folder mapping."
+        )
 
         # Select the columns to use
         typer.echo("Select the column to use to identify files:")
@@ -51,11 +54,13 @@ def run() -> None:
         dir_field = prompt_select_header(headers)
         sort_map = create_sort_map(student_data, filename_field, dir_field)
 
+        dest_dir = source_dir.parent / f"{source_dir.name}" / "sorted"
+
         # Confirm operation
         if prompt_confirm_sort(source_dir, dest_dir, filename_field, dir_field):
             # Perform sorting
             typer.secho("Sorting files...")
-            missing = filesorter(source_dir, dest_dir, sort_map)
+            missing = sort_files(source_dir, dest_dir, sort_map)
             typer.secho("Sorting complete!", fg=SUCCESS_FG)
 
             if missing:
@@ -64,44 +69,6 @@ def run() -> None:
                     typer.secho(f"\t{f}", fg=WARN_FG)
 
             return
-
-
-def prompt_input_path(prompt_text: str) -> Path:
-    """Prompt the user for a path and validate that it exists."""
-    while True:
-        path_str = prompt(prompt_text).strip().strip('"')
-        path = Path(path_str).resolve()
-        if path.exists():
-            return path
-
-        typer.secho("Path does not exist!", fg=WARN_FG)
-        typer.secho("Creating directory...", fg=WARN_FG)
-        path.mkdir(parents=True, exist_ok=True)
-        typer.secho(f"Created directory at {path}", fg=SUCCESS_FG)
-        return path
-
-
-def prompt_get_csv() -> tuple[list, Path, dict]:
-    """Prompt user to input a CSV file path and returns its contents as a list of dicts."""
-    while True:
-        path_str = prompt("Enter the csv path").strip().strip('"')
-        path = Path(path_str)
-
-        # Validate filepath
-        if not path.exists():
-            typer.secho("File does not exist!", fg=typer.colors.RED)
-            continue
-        if path.suffix.lower() != ".csv":
-            typer.secho("File is not a CSV!", fg=typer.colors.RED)
-            continue
-
-        # Read CSV contents
-        with path.open("r", newline="", encoding="utf-8-sig") as f:
-            reader = csv.DictReader(f)
-            headers = reader.fieldnames
-            data = list(reader)
-
-        return data, headers
 
 
 def create_sort_map(data: list, filename_field: str, dir_field: str) -> dict:
@@ -120,24 +87,12 @@ def create_sort_map(data: list, filename_field: str, dir_field: str) -> dict:
     return sort_map
 
 
-def prompt_select_header(headers: list[str]) -> str:
-    """Select a header (column) from a list."""
-    while True:
-        for i, h in enumerate(headers):
-            typer.echo(f"\t[{i}] {h}")
-        selection = prompt("Select column:", type=int)
-
-        if selection in range(len(headers)):
-            return headers[selection]
-        typer.secho("Invalid selection", fg=ERROR_FG)
-
-
 def prompt_confirm_sort(source: Path, dest: Path, filename_field: str, dir_field: str) -> bool:
     """Prompt user to confirm sorting operation."""
     typer.echo("Please confirm the following:")
     typer.echo(f"\tSource Directory: {source}")
-    typer.echo(f"\tUsing for [{filename_field}] to identify files")
+    typer.echo(f"\tUsing [{filename_field}] to identify files")
     typer.echo(f"\tSorting into folders based on for [{dir_field}] to identify files")
     typer.echo(f"\tDestination Directory: {dest}")
 
-    return confirm("Proceed with sorting?")
+    return confirm("Is this information correct?")

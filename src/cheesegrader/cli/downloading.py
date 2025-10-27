@@ -45,9 +45,8 @@ confirm = create_confirm(HELP_TEXT)
 
 def run() -> None:
     while True:
-        typer.secho("\n=== DOWNLOAD TOOLS ===", bold=True)
+        typer.secho("\n=== DOWNLOAD TOOLS ===\n", bold=True)
 
-        typer.echo()
         typer.echo("Available downloading modules: ")
         typer.echo("\t[0] Student Lists")
         typer.echo("\t[1] Student Submissions")
