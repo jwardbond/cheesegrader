@@ -79,8 +79,8 @@ def prompt_select_headers(headers: list[str]) -> list[str]:
     selected = []
     remaining = list(headers)
 
-    typer.secho("Select columns to use when renaming files (pick one at a time):")
-    typer.secho("Whatever is in these columns will be prepended to the file name.")
+    typer.secho("Select columns to use when renaming files (pick one at a time)")
+    typer.secho("Whatever is in these columns will be PREPENDED to the file name.")
 
     while remaining:
         header = prompt_select_header(remaining)
