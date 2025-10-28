@@ -1,15 +1,17 @@
 Cheesegrader 🧀
 ============
 
-Cheesegrader is a CLI tool to streamline grading workflows for Quercus (Canvas). 
+Cheesegrader is a CLI tool to streamline grading workflows for Quercus (Canvas). Its main features are
 
-Its main features are: 
-- `sorting`: Sorting rubrics/student assignments into folders based on their filenames. Useful to organize graders.
-- `copying`: Generating a copy of a file for each student. Useful for rubrics.
-- `renaming`: Replacing one id filenames with another id. Useful when (e.g.) you bulk download off quercus and find out the assignments don't have UTORID in the name.
-- `downloading`: Downloading student lists, or assignment submissions.
-- `uploading`: Uploading grades, files, or both to quercus for every student.
 
+Interacting with quercus programmatically: 
+- `downloading` from quercus: student lists and assignment submissions.
+- `uploading` to quercus: grades, files (e.g., named rubrics for every student), or both!
+
+Convenient file utils:
+- `sorting` named files: Sort files into folders based on who is assigned to grade them, etc.
+- `copying`: Copy and rename a file for every student in your course (e.g., a rubric)
+- `renaming`: Bulk replace part of a named file with another name. This is useful when you download things manually off quercus and then realize they are name using some internal ID rather than utorid... easy to change!
 
 Following the prompts should be pretty straightforward, but you can press `h` at any time for help, and `q` or `ctrl+c` to quit.
 
