@@ -25,7 +25,6 @@ class QuercusCourse:
         auth_key (dict): The Authorization header dictionary for Canvas API requests. i.e. {'Authorization': 'Bearer <token>'}
         endpoints (dict): A collection of API endpoint URLs related to the course.
         course (dict): The course information fetched from the API.
-        students (list): A list of dictionary records for students enrolled in the course.
     """
 
     def __init__(self, course_id: str | int, token: str) -> None:
@@ -41,6 +40,13 @@ class QuercusCourse:
         self.endpoints = {
             "course": f"https://q.utoronto.ca/api/v1/courses/{course_id}/",
             "students": f"https://q.utoronto.ca/api/v1/courses/{course_id}/students",
+            "teachers": (
+                f"https://q.utoronto.ca/api/v1/courses/{course_id}/users?enrollment_type=teacher"
+            ),
+            "tas": (
+                f"https://q.utoronto.ca/api/v1/courses/{course_id}/users"
+                "?enrollment_type=ta&per_page=100"
+            ),
         }
 
         self.course = self._get_course()
@@ -58,6 +64,29 @@ class QuercusCourse:
             response = r.get(url, headers=self.auth_key, timeout=10)
             self._students = remove_duplicates(response.json())
         return self._students
+
+    @property
+    def teachers(self) -> list[dict]:
+        """Returns the list of instructors in the course."""
+        if not hasattr(self, "_teachers"):
+            url = self.endpoints["teachers"]
+            response = r.get(url, headers=self.auth_key, timeout=10)
+            self._teachers = response.json()
+        return self._teachers
+
+    @property
+    def tas(self) -> list[dict]:
+        """Returns the list of TAs in the course."""
+        if not hasattr(self, "_tas"):
+            url = self.endpoints["tas"]
+            response = r.get(url, headers=self.auth_key, timeout=10)
+            self._tas = response.json()
+        return self._tas
+
+    @property
+    def instructors(self) -> list[dict]:
+        """Returns the list of instructors in the course (teachers and TAs)."""
+        return self.teachers + self.tas
 
     def _get_course(self) -> dict:
         """Returns the course information."""
@@ -94,7 +123,7 @@ class QuercusCourse:
         """Returns a mapping of student Canvas IDs to UtorIDs."""
         id_utorid_map = {}
         for s in self.students:
-            canvas_id = str(s.get("id", ""))
+            canvas_id = s.get("id", "")
             utorid = s.get("sis_user_id", "")
             id_utorid_map[canvas_id] = utorid
 
