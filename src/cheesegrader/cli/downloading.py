@@ -137,9 +137,9 @@ def prompt_confirm_download_submissions(
         f"    Course: {course.course_name} ({course.course_id})",
     )
     typer.echo(
-        f"    Assignment: {assignment.assignment_name} ({assignment.assignment_id})",
+        f"    Assignment: {assignment.name} ({assignment.assignment_id})",
     )
-    typer.echo(f"    Output Directory: {output_dir}", fg=SUCCESS_FG)
+    typer.echo(f"    Output Directory: {output_dir}")
 
     return confirm("Is this information correct?")
 

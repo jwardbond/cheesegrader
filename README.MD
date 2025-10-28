@@ -3,15 +3,15 @@ Cheesegrader 🧀
 
 Cheesegrader is a CLI tool to streamline grading workflows for Quercus (Canvas). Its main features are
 
-
 Interacting with quercus programmatically: 
-- `downloading` from quercus: student lists and assignment submissions.
-- `uploading` to quercus: grades, files (e.g., named rubrics for every student), or both!
+- `downloading` student lists and student submissions
+- `uploading` grades, files, or both
+- `deleting` comments for a given assignment (useful if you've messed up during uploading)
 
 Convenient file utils:
-- `sorting` named files: Sort files into folders based on who is assigned to grade them, etc.
-- `copying`: Copy and rename a file for every student in your course (e.g., a rubric)
-- `renaming`: Bulk replace part of a named file with another name. This is useful when you download things manually off quercus and then realize they are name using some internal ID rather than utorid... easy to change!
+- `sorting` files into folders (e.g., sorting assignment submissions by graders)
+- `copying`: Copy and rename a file (e.g., creating a named copy of a rubric for every student in a course)
+- `renaming`: Bulk replace part of a named file with another name (e.g., replacing quercus IDs with UTORID)
 
 Following the prompts should be pretty straightforward, but you can press `h` at any time for help, and `q` or `ctrl+c` to quit.
 
@@ -20,6 +20,7 @@ Following the prompts should be pretty straightforward, but you can press `h` at
 - [Getting Started](#getting-started)
 - [Authentication and tokens](#authentication-and-tokens)
 - [Course and assignment IDs](#course-and-assignment-ids)
+- [Todo](#todo)
 - [Contact](#contact)
 
 
@@ -40,6 +41,11 @@ To use the uploading and downloading scripts, you will need to generate and inpu
 - Course and assignment IDs are visible in Quercus URLs:
   - https://q.utoronto.ca/courses/[COURSE_ID]/assignments/[ASSIGNMENT_ID]
 - CSVs should have clean headers (no duplicates, no blanks) and UTF-8 encoding.
+
+
+## Todo
+- Implement group assignments
+- Multithread uploads
 
 
 ## Contact

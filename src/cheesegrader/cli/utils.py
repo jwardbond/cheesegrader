@@ -233,7 +233,7 @@ def prompt_setup_course() -> QuercusCourse:
         except Exception as e:
             emsg = "Error loading course"
             typer.secho(emsg, fg=ERROR_FG)
-            msg = "You likely \n   a) put in the wrong course ID\n   b) do not have permissions for the course, or\n   c) your token is invalid.\n"
+            msg = "You likely \n   a) put in the wrong course ID or\n   b) do not have permissions for the course, or\n   c) your token is invalid.\n"
             typer.secho(msg, fg=ERROR_FG)
             continue
 
@@ -259,7 +259,7 @@ def prompt_setup_assignment(course: QuercusCourse) -> QuercusAssignment:
     typer.echo("Loading assignment...")
     assignment = QuercusAssignment(course.course_id, assignment_id, token=os.getenv("CG_TOKEN"))
     typer.secho(
-        f"Loaded assignment: {assignment.assignment_name} ({assignment_id})\n",
+        f"Loaded assignment: {assignment.name} ({assignment_id})\n",
         fg=SUCCESS_FG,
     )
 
