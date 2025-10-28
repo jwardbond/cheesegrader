@@ -45,4 +45,3 @@ To use the uploading and downloading scripts, you will need to generate and inpu
 ## Contact
 - Submit issues/bugs [here](https://github.com/jwardbond/cheesegrader/issues)
 - I'm also happy to answer any questions if you send them to jesse.wardbond at mail.utoronto.ca
-// ...existing code...
