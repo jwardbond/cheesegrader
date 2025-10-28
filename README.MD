@@ -17,7 +17,7 @@ Following the prompts should be pretty straightforward, but you can press `h` at
 ## Table of contents<!-- omit from toc -->
 - [Getting Started](#getting-started)
 - [Authentication and tokens](#authentication-and-tokens)
-- [Course and assignmend IDs](#course-and-assignmend-ids)
+- [Course and assignment IDs](#course-and-assignment-ids)
 - [Contact](#contact)
 
 
@@ -34,7 +34,7 @@ To use the uploading and downloading scripts, you will need to generate and inpu
 - Navigating to [https://q.utoronto.ca/profile/settings](https://q.utoronto.ca/profile/settings) and clicking `+ New Access Token`
 
 
-## Course and assignmend IDs
+## Course and assignment IDs
 - Course and assignment IDs are visible in Quercus URLs:
   - https://q.utoronto.ca/courses/[COURSE_ID]/assignments/[ASSIGNMENT_ID]
 - CSVs should have clean headers (no duplicates, no blanks) and UTF-8 encoding.
