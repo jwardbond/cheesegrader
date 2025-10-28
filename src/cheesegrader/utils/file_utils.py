@@ -84,7 +84,10 @@ def sort_files(
     return missing_files
 
 
-def replace_filename_substr(input_dir: Path, rename_map: dict[str, str]) -> None:
+def replace_filename_substr(
+    input_dir: Path,
+    rename_map: dict[str, str],
+) -> None:
     """Replaces portions of filenames in a directory based on a mapping.
 
     Useful when filenames contain an id number that needs to be replaced with another.
