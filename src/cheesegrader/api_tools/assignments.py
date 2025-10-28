@@ -113,8 +113,6 @@ class QuercusAssignment:
         Args:
             destination (Path): The path where the zip file will be saved.
         """
-        url = self.endpoints["submissions"]
-        headers = self.auth_key
         destination.mkdir(parents=True, exist_ok=True)
 
         # Ensure filenames contain utorid

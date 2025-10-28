@@ -53,7 +53,7 @@ def run() -> None:
     while True:
         # Get source directory
         source_dir = prompt_input_dir(
-            "Enter the source directory containing the files to be sorted."
+            "Enter the source directory containing the files to be sorted.",
         )
 
         # Get map file

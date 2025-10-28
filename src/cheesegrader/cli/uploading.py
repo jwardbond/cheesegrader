@@ -3,8 +3,6 @@
 
 """File uploading tool for CheeseGrader CLI.
 
-Guides the user through uploading grades and student files to Quercus.
-
 Interacts with CANVAS/Quercus APIs to upload grades and student files
 based on a provided CSV file containing student UTORIDs.
 

@@ -13,7 +13,6 @@ import typer
 
 from cheesegrader.cli.utils import (
     SUCCESS_FG,
-    WARN_FG,
     create_confirm,
     create_prompt,
     prompt_get_csv,

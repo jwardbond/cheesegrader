@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2025 Jesse Ward-Bond
 
-"""Comment deleting tool for CheeseGrader CLI."""
+"""Comment deleting tool for CheeseGrader CLI.
 
-import os
+Deletes comments from an assignment on Quercus based on user selection.
+
+Intended to be run as a subcommand of the Cheesegrader CLI.
+"""
 
 import typer
 
-from cheesegrader.api_tools import QuercusAssignment, QuercusCourse, get_user_from_token
+from cheesegrader.api_tools import QuercusAssignment, QuercusCourse
 from cheesegrader.cli.utils import (
     ERROR_FG,
     SUCCESS_FG,
