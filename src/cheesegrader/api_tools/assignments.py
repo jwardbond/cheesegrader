@@ -126,7 +126,9 @@ class QuercusAssignment:
 
         # Download the files to the output directory
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [executor.submit(download_file, sub["url"], sub["path"]) for sub in submissions]
+            futures = [
+                executor.submit(download_file, sub["url"], sub["path"]) for sub in submissions
+            ]
             for future in tqdm(as_completed(futures), total=len(futures)):
                 future.result()
 
@@ -143,7 +145,9 @@ class QuercusAssignment:
             list: A list of dictionaries, each containing student grading information
         """
         url = (
-            self.endpoints["group_users"] + str(self.group_ids[group_info["id"]]) + self.endpoints["group_users_suffix"]
+            self.endpoints["group_users"]
+            + str(self.group_ids[group_info["id"]])
+            + self.endpoints["group_users_suffix"]
         )
         params = {"per_page": 20}
 
@@ -194,7 +198,11 @@ class QuercusAssignment:
         Returns:
             bool: True if the final linkig was successful (HTTP status 2xx), False otherwise.
         """
-        url = self.endpoints["submission"] + f"{sis_id}" + self.endpoints["submission_comments_suffix"]
+        url = (
+            self.endpoints["submission"]
+            + f"{sis_id}"
+            + self.endpoints["submission_comments_suffix"]
+        )
 
         # Step 1: Get upload URL
         name = filepath.name
@@ -247,13 +255,13 @@ class QuercusAssignment:
         error_list = []
         for utorid, grade in tqdm(grades.items()):
             if not grade:
-                error_list.append(f"{utorid}: \t Missing grade")
+                error_list.append(f"{utorid}:      Missing grade")
                 continue
 
             try:
                 self.post_grade(utorid, grade)
             except Exception:  # noqa: BLE001
-                error_list.append(f"{utorid}: \t Missing student or post failed")
+                error_list.append(f"{utorid}:      Missing student or post failed")
 
         return error_list
 
@@ -273,14 +281,14 @@ class QuercusAssignment:
         error_list = []
         for student, files in tqdm(student_files.items()):
             if not files:
-                error_list.append(f"{student}: \t No files found for upload")
+                error_list.append(f"{student}:      No files found for upload")
                 continue
 
             for file in files:
                 try:
                     self.upload_file(student, file)
                 except Exception:  # noqa: BLE001
-                    error_list.append(f"{student}: \t Upload failed for {file.name}")
+                    error_list.append(f"{student}:      Upload failed for {file.name}")
 
         return error_list
 

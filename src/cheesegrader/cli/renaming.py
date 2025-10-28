@@ -62,9 +62,7 @@ def run() -> None:
         current_id = prompt_select_header(headers)
         headers.remove(current_id)
 
-        typer.echo(
-            "Select the column containg the IDs you WANT to be in the filenames."
-        )
+        typer.echo("Select the column containg the IDs you WANT to be in the filenames.")
         desired_id = prompt_select_header(headers)
         rename_map = create_map(student_data, current_id, desired_id)
 
@@ -88,12 +86,10 @@ def create_map(data: list, current_id: str, desired_id: str) -> dict:
     return sort_map
 
 
-def prompt_confirm_rename(
-    source: Path, current_id: str, desired_id: str
-) -> bool:
+def prompt_confirm_rename(source: Path, current_id: str, desired_id: str) -> bool:
     """Prompt user to confirm renaming operation."""
     typer.echo("Please confirm the following:")
-    typer.echo(f"\tLooking for files in: {source}")
-    typer.echo(f"\tSwapping [{current_id}] with [{desired_id}]")
+    typer.echo(f"    Looking for files in: {source}")
+    typer.echo(f"    Swapping [{current_id}] with [{desired_id}]")
 
     return confirm("Is this information correct?")

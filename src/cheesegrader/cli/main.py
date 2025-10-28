@@ -34,7 +34,7 @@ Help Menu:
 def main() -> None:
     """Main entry point for the Cheesegrader CLI."""
     typer.secho(
-        "Welcome to 🧀 Cheesegrader! ctrl+c to quit",
+        "Welcome to Cheesegrader 🧀! ctrl+c to quit",
         fg=typer.colors.YELLOW,
         bold=True,
     )
@@ -49,14 +49,14 @@ def main_menu() -> None:
     while True:
         typer.echo()
         typer.echo("Available modules: ")
-        typer.echo("\t[0] Sorting")
-        typer.echo("\t[1] Copying")
-        typer.echo("\t[2] Renaming")
-        typer.echo("\t[3] Uploading")
-        typer.echo("\t[4] Downloading")
-        typer.echo("\t---")
-        typer.echo("\t[h] Help")
-        typer.echo("\t[q] Quit")
+        typer.echo("    [0] Sorting")
+        typer.echo("    [1] Copying")
+        typer.echo("    [2] Renaming")
+        typer.echo("    [3] Uploading")
+        typer.echo("    [4] Downloading")
+        typer.echo("    ---")
+        typer.echo("    [h] Help")
+        typer.echo("    [q] Quit")
 
         choice = prompt("What do you want to do?", type=str)
 

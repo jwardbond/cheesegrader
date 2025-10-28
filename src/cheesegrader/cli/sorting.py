@@ -52,7 +52,9 @@ def run() -> None:
 
     while True:
         # Get source directory
-        source_dir = prompt_input_dir("Enter the source directory containing the files to be sorted.")
+        source_dir = prompt_input_dir(
+            "Enter the source directory containing the files to be sorted."
+        )
 
         # Get map file
         student_data, headers, _ = prompt_get_csv(
@@ -78,7 +80,7 @@ def run() -> None:
             if missing:
                 typer.secho("The following files were not found:", fg=WARN_FG)
                 for f in missing:
-                    typer.secho(f"\t{f}", fg=WARN_FG)
+                    typer.secho(f"    {f}", fg=WARN_FG)
 
             return
 
@@ -92,9 +94,9 @@ def create_sort_map(data: list, filename_field: str, dir_field: str) -> dict:
         if filename and dirname:
             sort_map[filename] = dirname
         elif not filename:
-            typer.secho(f"\tWarning: Missing {filename_field} for {entry}", fg=WARN_FG)
+            typer.secho(f"    Warning: Missing {filename_field} for {entry}", fg=WARN_FG)
         elif not dirname:
-            typer.secho(f"\tWarning: Missing {dirname} for {entry}", fg=WARN_FG)
+            typer.secho(f"    Warning: Missing {dirname} for {entry}", fg=WARN_FG)
 
     return sort_map
 
@@ -102,9 +104,9 @@ def create_sort_map(data: list, filename_field: str, dir_field: str) -> dict:
 def prompt_confirm_sort(source: Path, dest: Path, filename_field: str, dir_field: str) -> bool:
     """Prompt user to confirm sorting operation."""
     typer.echo("Please confirm the following:")
-    typer.echo(f"\tSource Directory: {source}")
-    typer.echo(f"\tUsing [{filename_field}] to identify files")
-    typer.echo(f"\tSorting into folders based on for [{dir_field}] to identify files")
-    typer.echo(f"\tDestination Directory: {dest}")
+    typer.echo(f"    Source Directory: {source}")
+    typer.echo(f"    Using [{filename_field}] to identify files")
+    typer.echo(f"    Sorting into folders based on for [{dir_field}] to identify files")
+    typer.echo(f"    Destination Directory: {dest}")
 
     return confirm("Is this information correct?")

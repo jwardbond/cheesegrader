@@ -99,9 +99,7 @@ def run() -> None:
 
         if need_files:
             dir_list = prompt_get_dirs()
-            filepaths = {
-                d[id_col]: search_dirs(dir_list, d[id_col]) for d in data
-            }
+            filepaths = {d[id_col]: search_dirs(dir_list, d[id_col]) for d in data}
         else:
             dir_list = None
 
@@ -136,9 +134,9 @@ def run() -> None:
 def prompt_mode() -> str:
     """Prompt user to select an upload mode."""
     typer.echo("Available upload modes: ")
-    typer.echo("\t[0] Grades only")
-    typer.echo("\t[1] Files only")
-    typer.echo("\t[2] Both Grades and Files")
+    typer.echo("    [0] Grades only")
+    typer.echo("    [1] Files only")
+    typer.echo("    [2] Both Grades and Files")
 
     mode = prompt("Select upload mode", type=int)
 
@@ -156,9 +154,7 @@ def prompt_get_dirs() -> list[Path]:
     """
     dirs = []
     add_more = True
-    typer.echo(
-        "Enter the directories to search for student files. One at a time."
-    )
+    typer.echo("Enter the directories to search for student files. One at a time.")
 
     while add_more:
         dir_str = prompt("Enter path to directory.").strip().strip('"')
@@ -182,16 +178,16 @@ def prompt_confirm_upload(
 ) -> bool:
     """Display final details before uploading."""
     typer.echo("Please confirm the following details before uploading:")
-    typer.echo(f"\tCourse: {course.course_name}")
-    typer.echo(f"\tAssignment: {assignment.assignment_name}")
-    typer.echo(f"\tUpload mode: {mode.name}")
-    typer.echo(f"\tStudent file: {csv_path}")
-    typer.echo(f"\tID column: {id_col}")
+    typer.echo(f"    Course: {course.course_name}")
+    typer.echo(f"    Assignment: {assignment.assignment_name}")
+    typer.echo(f"    Upload mode: {mode.name}")
+    typer.echo(f"    Student file: {csv_path}")
+    typer.echo(f"    ID column: {id_col}")
     if grade_col:
-        typer.echo(f"\tGrade column: {grade_col}")
+        typer.echo(f"    Grade column: {grade_col}")
     if dir_list:
         typer.echo(
-            f"\tDirectories to search: {', '.join(str(d) for d in dir_list)}",
+            f"    Directories to search: {', '.join(str(d) for d in dir_list)}",
         )
 
     typer.secho(

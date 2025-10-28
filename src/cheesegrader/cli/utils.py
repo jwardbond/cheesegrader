@@ -169,7 +169,7 @@ def prompt_select_header(headers: list[str]) -> str:
 
     while True:
         for i, h in enumerate(headers):
-            typer.echo(f"\t[{i}] {h}")
+            typer.echo(f"    [{i}] {h}")
         selection = prompt("Select column:", type=int)
 
         if selection in range(len(headers)):

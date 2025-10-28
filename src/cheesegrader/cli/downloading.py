@@ -65,12 +65,12 @@ def run() -> None:
         typer.secho("\n=== DOWNLOAD TOOLS ===\n", bold=True)
 
         typer.echo("Available downloading modules: ")
-        typer.echo("\t[0] Student Lists")
-        typer.echo("\t[1] Student Submissions")
+        typer.echo("    [0] Student Lists")
+        typer.echo("    [1] Student Submissions")
 
-        typer.echo("\t---")
-        typer.echo("\t[h] Help")
-        typer.echo("\t[q] Quit")
+        typer.echo("    ---")
+        typer.echo("    [h] Help")
+        typer.echo("    [q] Quit")
 
         choice = prompt("What do you want to download?", type=str)
 
@@ -94,9 +94,7 @@ def download_student_list() -> None:
         course = prompt_setup_course()
 
         # Setup output path
-        output_dir = prompt_input_dir(
-            "Enter the output directory for the student list."
-        )
+        output_dir = prompt_input_dir("Enter the output directory for the student list.")
         output_path = output_dir / f"{course.course_id}_student_list.csv"
 
         # Confirm operation
@@ -115,13 +113,8 @@ def download_submissions() -> None:
         assignment = prompt_setup_assignment(course)
 
         # Setup output directory
-        output_dir = prompt_input_dir(
-            "Enter the output directory for the student submissions."
-        )
-        output_dir = (
-            output_dir
-            / f"{course.course_id}_{assignment.assignment_id}_submissions"
-        )
+        output_dir = prompt_input_dir("Enter the output directory for the student submissions.")
+        output_dir = output_dir / f"{course.course_id}_{assignment.assignment_id}_submissions"
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Confirm operation
@@ -141,24 +134,20 @@ def prompt_confirm_download_submissions(
     """Prompt the user to confirm downloading submissions."""
     typer.echo("\nPlease confirm the following information:")
     typer.echo(
-        f"\tCourse: {course.course_name} ({course.course_id})",
+        f"    Course: {course.course_name} ({course.course_id})",
     )
     typer.echo(
-        f"\tAssignment: {assignment.assignment_name} ({assignment.assignment_id})",
+        f"    Assignment: {assignment.assignment_name} ({assignment.assignment_id})",
     )
-    typer.echo(f"\tOutput Directory: {output_dir}", fg=SUCCESS_FG)
+    typer.echo(f"    Output Directory: {output_dir}", fg=SUCCESS_FG)
 
     return confirm("Is this information correct?")
 
 
-def prompt_confirm_download_student_list(
-    course: QuercusCourse, output_path: Path
-) -> bool:
+def prompt_confirm_download_student_list(course: QuercusCourse, output_path: Path) -> bool:
     """Prompt the user to confirm downloading the student list."""
     typer.echo("\nPlease confirm the following information:")
-    typer.secho(
-        f"\tCourse: {course.course_name} ({course.course_id})", fg=SUCCESS_FG
-    )
-    typer.secho(f"\tOutput File: {output_path}", fg=SUCCESS_FG)
+    typer.secho(f"    Course: {course.course_name} ({course.course_id})", fg=SUCCESS_FG)
+    typer.secho(f"    Output File: {output_path}", fg=SUCCESS_FG)
 
     return confirm("Is this information correct?")

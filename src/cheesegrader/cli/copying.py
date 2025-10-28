@@ -57,7 +57,9 @@ def run() -> None:
     input_filepath = prompt_input_filepath("Enter the path to the file to be copied.")
 
     # Load student list
-    student_data, headers, csv_path = prompt_get_csv("Enter the path to the student list .csv file.")
+    student_data, headers, csv_path = prompt_get_csv(
+        "Enter the path to the student list .csv file."
+    )
 
     # Select which columns to use when creating name
     name_fields = prompt_select_headers(headers)
@@ -114,9 +116,9 @@ def prompt_confirm_copy(
 ) -> bool:
     """Prompt the user to confirm proceeding with the copy operation."""
     typer.echo("Please confirm the following settings:")
-    typer.echo(f"\tInput file to copy: {input_filepath}")
-    typer.echo(f"\tDestination directory: {dest_dir}")
-    typer.echo(f"\tCSV being used for renaming: {csv_path}")
+    typer.echo(f"    Input file to copy: {input_filepath}")
+    typer.echo(f"    Destination directory: {dest_dir}")
+    typer.echo(f"    CSV being used for renaming: {csv_path}")
 
     # Construct sample filename
     base = input_filepath.stem
@@ -126,6 +128,6 @@ def prompt_confirm_copy(
     filename = filename + "_" + base + suffix
     filename = filename.replace(" ", "_")  # remove any lingering spaces
     filename = filename.lower()
-    typer.echo(f"\tFile name example: {filename}")
+    typer.echo(f"    File name example: {filename}")
 
     return confirm("Is this information correct?")
