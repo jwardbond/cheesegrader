@@ -13,37 +13,19 @@ Its main features are:
 
 Following the prompts should be pretty straightforward, but you can press `h` at any time for help, and `q` or `ctrl+c` to quit.
 
-This has been very useful for me, and I hope it's very useful to you!
-
 
 ## Table of contents<!-- omit from toc -->
 - [Getting Started](#getting-started)
-- [Running the CLI](#running-the-cli)
 - [Authentication and tokens](#authentication-and-tokens)
 - [Course and assignmend IDs](#course-and-assignmend-ids)
 - [Contact](#contact)
 
 
 ## Getting Started
-- From PyPI (when published):
-  - Windows (PowerShell): `py -m pip install cheesegrader`
-  - Then run: `cheesegrader`
-- From source (this repo):
-  - `git clone <repo-url>`
-  - `cd cheesegrader`
-  - `py -m pip install -U pip`
-  - Editable dev install: `py -m pip install -e .`
-  - Then run: `cheesegrader`
-
-## Running the CLI
-
-- Windows: `py -m cheesegrader main`
-- You’ll see a menu with modules:
-  - [0] Sorting
-  - [1] Copying
-  - [2] Uploading
-  - [3] Downloading
-- Enter h at any prompt for help; q to quit.
+1. `pip install cheesegrader`
+2. run `cheesegrader` from the command line
+3. Follow the prompts
+   
 
 ## Authentication and tokens
 To use the uploading and downloading scripts, you will need to generate and input an API access token. You can get this:
@@ -51,10 +33,12 @@ To use the uploading and downloading scripts, you will need to generate and inpu
 - Logging in to canvas/quercus and then `account > settings > + New Access Token`
 - Navigating to [https://q.utoronto.ca/profile/settings](https://q.utoronto.ca/profile/settings) and clicking `+ New Access Token`
 
+
 ## Course and assignmend IDs
 - Course and assignment IDs are visible in Quercus URLs:
   - https://q.utoronto.ca/courses/[COURSE_ID]/assignments/[ASSIGNMENT_ID]
 - CSVs should have clean headers (no duplicates, no blanks) and UTF-8 encoding.
+
 
 ## Contact
 - Submit issues/bugs [here](https://github.com/jwardbond/cheesegrader/issues)
