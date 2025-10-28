@@ -55,7 +55,10 @@ class QuercusAssignment:
         self.endpoints = {
             "course": f"https://q.utoronto.ca/api/v1/courses/{course_id}/",
             "assignment": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}",
-            "submissions": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}/submissions?per_page=100",
+            "submissions": (
+                f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}/"
+                "submissions?per_page=100&include[]=submission_comments"
+            ),
             "submission": f"https://q.utoronto.ca/api/v1/courses/{course_id}/assignments/{assignment_id}/submissions/sis_user_id:",
             "submission_comments_suffix": "/comments/files",
             "groups": "https://q.utoronto.ca/api/v1/group_categories/",
@@ -75,7 +78,7 @@ class QuercusAssignment:
         return self._assignment
 
     @property
-    def assignment_name(self) -> str:
+    def name(self) -> str:
         """Returns the name of the assignment."""
         return self.assignment["name"]
 
@@ -91,6 +94,19 @@ class QuercusAssignment:
             self._course = QuercusCourse(self.course_id, token=self.token)
         return self._course
 
+    @property
+    def submissions(self) -> list:
+        """Returns the list of submissions for the assignment."""
+        if not hasattr(self, "_submissions"):
+            url = self.endpoints["submissions"]
+            submissions = []
+            while url:
+                response = r.get(url, headers=self.auth_key, timeout=10)
+                submissions.extend(response.json())
+                url = response.links.get("next", {}).get("url")
+            self._submissions = submissions
+        return self._submissions
+
     def download_submissions(self, destination: Path) -> None:
         """Downloads the submissions zip file for the assignment.
 
@@ -98,37 +114,31 @@ class QuercusAssignment:
             destination (Path): The path where the zip file will be saved.
         """
         url = self.endpoints["submissions"]
-        response = r.get(url, headers=self.auth_key, timeout=10)
+        headers = self.auth_key
         destination.mkdir(parents=True, exist_ok=True)
 
         # Ensure filenames contain utorid
         id_utorid_map = self.course.get_id_utorid_map()
 
         # Loop through api pages and construct submissions list
-        submissions = []
-        while "next" in response.links:
-            # Get list of file urls and desired filepaths
-            for submission in response.json():
-                for attachment in submission.get("attachments", []):
-                    url = attachment["url"]
+        job_list = []
+        for submission in self.submissions:
+            for attachment in submission.get("attachments", []):
+                attachment_url = attachment["url"]
+                user_id = str(submission["user_id"])
+                utorid = str(id_utorid_map.get(user_id, user_id))
 
-                    user_id = str(submission["user_id"])
-                    utorid = str(id_utorid_map.get(user_id, user_id))
+                filename = utorid + "_" + attachment["display_name"]
 
-                    filename = utorid + "_" + attachment["display_name"]
+                # Because students insert crazy symbols in filenames
+                filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", filename).strip().rstrip(". ")
+                filepath = destination / filename
 
-                    # Because students insert crazy symbols in filenames
-                    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', "_", filename).strip().rstrip(". ")
-                    filepath = destination / filename
-
-                    submissions.append({"path": filepath, "url": url})
-            response = r.get(response.links["next"]["url"], headers=self.auth_key, timeout=10)
+                job_list.append({"path": filepath, "url": attachment_url})
 
         # Download the files to the output directory
         with ThreadPoolExecutor(max_workers=10) as executor:
-            futures = [
-                executor.submit(download_file, sub["url"], sub["path"]) for sub in submissions
-            ]
+            futures = [executor.submit(download_file, job["url"], job["path"]) for job in job_list]
             for future in tqdm(as_completed(futures), total=len(futures)):
                 future.result()
 
@@ -279,18 +289,73 @@ class QuercusAssignment:
             list[str]: A list of error messages for files that were not found or failed to upload.
         """
         error_list = []
-        for student, files in tqdm(student_files.items()):
+        for student_id, files in tqdm(student_files.items()):
             if not files:
-                error_list.append(f"{student}:      No files found for upload")
+                error_list.append(f"{student_id}: No files found for upload")
                 continue
 
             for file in files:
                 try:
-                    self.upload_file(student, file)
+                    self.upload_file(student_id, file)
                 except Exception:  # noqa: BLE001
-                    error_list.append(f"{student}:      Upload failed for {file.name}")
+                    error_list.append(f"{student_id}: Upload failed for {file.name}")
 
         return error_list
+
+    def get_comment_authors(self, instructor_only: bool = True) -> dict[int, str]:
+        """Returns a dictionary of author IDs and names for submission comments.
+
+        Args:
+            instructor_only (bool): If True, only include comments made by instructors and TAs.
+
+        Returns:
+            dict[int, str]: A dictionary mapping author IDs to their names.
+        """
+        authors = {}
+        allowed_ids = set()
+        if instructor_only:
+            allowed_ids = {instr["id"] for instr in self.course.instructors}
+
+        for submission in self.submissions:
+            for comment in submission.get("submission_comments", []):
+                author_id = comment["author_id"]
+                author_name = comment["author_name"]
+
+                if (len(allowed_ids) == 0) or (author_id in allowed_ids):
+                    authors[author_id] = author_name
+
+        return authors
+
+    def delete_comments(self, authors: dict[int, str]) -> list[dict]:
+        """Deletes all submission comments made by the specified authors.
+
+        Done in two steps to allow possibility of multi-threading later.
+
+        Args:
+            authors (dict[int, str]): A dictionary mapping author IDs to their names.
+
+        Returns:
+            list[dict]: A dictionary of errors encountered during deletion.
+        """
+        id_utorid_map = self.course.get_id_utorid_map()
+        errors = {}
+
+        # Build list of comments to delete
+        jobs = []
+        for submission in self.submissions:
+            utorid = id_utorid_map[submission["user_id"]]
+            for comment in submission.get("submission_comments", []):
+                if comment["author_id"] in authors:
+                    jobs.append((utorid, comment["author_id"], comment["id"]))
+
+        # Delete comments
+        for utorid, author_id, comment_id in tqdm(jobs):
+            url = f"{self.endpoints['submission']}{utorid}/comments/{comment_id}"
+            response = r.delete(url, headers=self.auth_key, timeout=10)
+            if not response.ok:
+                errors[utorid] = f"Failed to delete comment by {authors[author_id]}"
+
+        return errors
 
     # def _get_groups(self) -> dict | None:
     #     if self.is_group:
