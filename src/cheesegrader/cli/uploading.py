@@ -78,7 +78,9 @@ def run() -> None:
         mode = UploadMode(prompt_mode())
 
         # Get student file
-        data, headers, csv_path = prompt_get_csv("Enter the path to the student list .csv file.")
+        data, headers, csv_path = prompt_get_csv(
+            "Enter the path to the grade file (.csv) containing student UTORIDs and grades.",
+        )
 
         # Get utorid column
         typer.echo("Select which column contains the UTORID")
@@ -90,13 +92,16 @@ def run() -> None:
         if need_grades:
             typer.echo("Select which column contains the grades.")
             grade_col = prompt_select_header(headers)
+            headers.remove(grade_col)
             grades = {data[id_col]: float(data[grade_col]) for data in data}
         else:
             grade_col = None
 
         if need_files:
             dir_list = prompt_get_dirs()
-            filepaths = {d[id_col]: search_dirs(dir_list, d[id_col]) for d in data}
+            filepaths = {
+                d[id_col]: search_dirs(dir_list, d[id_col]) for d in data
+            }
         else:
             dir_list = None
 
@@ -151,7 +156,9 @@ def prompt_get_dirs() -> list[Path]:
     """
     dirs = []
     add_more = True
-    typer.echo("Enter the directories to search for student files. One at a time.")
+    typer.echo(
+        "Enter the directories to search for student files. One at a time."
+    )
 
     while add_more:
         dir_str = prompt("Enter path to directory.").strip().strip('"')
@@ -183,6 +190,14 @@ def prompt_confirm_upload(
     if grade_col:
         typer.echo(f"\tGrade column: {grade_col}")
     if dir_list:
-        typer.echo(f"\tDirectories to search: {', '.join(str(d) for d in dir_list)}")
+        typer.echo(
+            f"\tDirectories to search: {', '.join(str(d) for d in dir_list)}",
+        )
+
+    typer.secho(
+        "\nBE VERY CERTAIN, IT IS A HUGE PAIN TO UNDO AN UPLOAD!",
+        bg=typer.colors.BRIGHT_RED,
+        bold=True,
+    )
 
     return confirm("Is this information correct?")

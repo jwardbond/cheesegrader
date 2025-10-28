@@ -43,7 +43,9 @@ class QuercusCourse:
             "students": f"https://q.utoronto.ca/api/v1/courses/{course_id}/students",
         }
 
-    @property
+        self.course = self._get_course()
+
+    @property  # TODO I don't know why this is a property lol
     def course_name(self) -> str:
         """Returns the name of the course."""
         return self.course["name"]
@@ -57,14 +59,11 @@ class QuercusCourse:
             self._students = remove_duplicates(response.json())
         return self._students
 
-    @property
-    def course(self) -> dict:
+    def _get_course(self) -> dict:
         """Returns the course information."""
-        if not hasattr(self, "_course"):
-            url = self.endpoints["course"]
-            response = r.get(url, headers=self.auth_key, timeout=10)
-            self._course = response.json()
-        return self._course
+        url = self.endpoints["course"]
+        response = r.get(url, headers=self.auth_key, timeout=10)
+        return response.json()
 
     def download_student_list(self, destination: Path) -> None:
         """Generates and saves a dataframe of student information for the course.

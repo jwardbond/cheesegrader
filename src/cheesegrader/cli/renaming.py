@@ -52,7 +52,7 @@ def run() -> None:
 
         # Get map file
         student_data, headers, _ = prompt_get_csv(
-            "Enter the path to the .csv file containing the ID -> UTORID mapping.",
+            "Enter the path to the .csv file containing ID columns.\n(Download one using the 'Downloading' tool if you don't have one yet.)",
         )
 
         # Select the columns to use
