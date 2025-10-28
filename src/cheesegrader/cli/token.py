@@ -24,7 +24,7 @@ from pathlib import Path
 
 import typer
 
-from cheesegrader.api_tools import validate_token
+from cheesegrader.api_tools import token_is_valid
 from cheesegrader.cli.utils import SUCCESS_FG, create_confirm, create_prompt
 
 TOKEN_FILE = Path.home() / ".cheesegrader_token"
@@ -70,7 +70,7 @@ def ensure_token() -> str:
         token = typer.prompt("Enter your API token")
 
     typer.echo("Validating token...")
-    if not validate_token(token):
+    if not token_is_valid(token):
         typer.secho("Invalid token.", fg=typer.colors.RED)
         typer.echo(
             "You can get a token from your account page by following the instructions: https://developerdocs.instructure.com/services/canvas/oauth2/file.oauth#manual-token-generation",
