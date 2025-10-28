@@ -65,7 +65,12 @@ def create_prompt(help_msg: str) -> Callable[..., str]:
             if response in ("h", "H"):
                 typer.secho(help_msg, fg=HELP_FG)
                 typer.echo()
-                typer.secho("Press any key to continue", fg=PROMPT_FG, bg=HELP_BG, nl=False)
+                typer.secho(
+                    "Press any key to continue",
+                    fg=PROMPT_FG,
+                    bg=HELP_BG,
+                    nl=False,
+                )
                 input()
             elif response in ("q", "Q"):
                 raise typer.Exit
@@ -97,7 +102,12 @@ def create_confirm(help_msg: str) -> Callable[..., str]:
             if response == "h":
                 typer.secho(help_msg, fg=HELP_FG)
                 typer.echo()
-                typer.secho("Press any key to continue", fg=PROMPT_FG, bg=HELP_BG, nl=False)
+                typer.secho(
+                    "Press any key to continue",
+                    fg=PROMPT_FG,
+                    bg=HELP_BG,
+                    nl=False,
+                )
                 input()
             elif response == "q":
                 typer.Exit()
@@ -207,11 +217,25 @@ def prompt_setup_course() -> QuercusCourse:
     """)
     prompt = create_prompt(help_msg)
 
-    typer.echo("Enter The Course ID.")
-    course_id = prompt("Course ID")
-    typer.echo("Loading course...")
-    course = QuercusCourse(course_id, token=os.getenv("CG_TOKEN"))
-    typer.secho(f"Loaded course: {course.course_name} ({course_id})\n", fg=SUCCESS_FG)
+    while True:
+        typer.echo("Enter The Course ID.")
+        course_id = prompt("Course ID")
+        typer.echo("Loading course...")
+
+        course = QuercusCourse(course_id, token=os.getenv("CG_TOKEN"))
+
+        try:
+            typer.secho(
+                f"Loaded course: {course.course_name} ({course_id})\n",
+                fg=SUCCESS_FG,
+            )
+            return course
+        except Exception as e:
+            emsg = "Error loading course"
+            typer.secho(emsg, fg=ERROR_FG)
+            msg = "You likely \n   a) put in the wrong course ID\n   b) do not have permissions for the course, or\n   c) your token is invalid.\n"
+            typer.secho(msg, fg=ERROR_FG)
+            continue
 
     return course
 
@@ -234,6 +258,9 @@ def prompt_setup_assignment(course: QuercusCourse) -> QuercusAssignment:
     assignment_id = prompt("Assignment ID")
     typer.echo("Loading assignment...")
     assignment = QuercusAssignment(course.course_id, assignment_id, token=os.getenv("CG_TOKEN"))
-    typer.secho(f"Loaded assignment: {assignment.assignment_name} ({assignment_id})\n", fg=SUCCESS_FG)
+    typer.secho(
+        f"Loaded assignment: {assignment.assignment_name} ({assignment_id})\n",
+        fg=SUCCESS_FG,
+    )
 
     return assignment
