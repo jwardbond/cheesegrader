@@ -132,12 +132,13 @@ def unzip_dir(input_file: Path) -> None:
     return output_dir
 
 
-def search_dirs(directories: list[Path], substr: str) -> list[Path]:
+def search_dirs(directories: list[Path], substr: str, recursive: bool = True) -> list[Path]:
     """Searches a list of directories for files matching a given utorid.
 
     Args:
         directories (list[Path]): A list of directories to search.
         substr (str): The utorid to search for in filenames.
+        recursive (Optional[bool]): Whether to search directories recursively. Defaults to True.
 
     Returns:
         list[Path]: A list of file paths that match the given utorid.
@@ -145,7 +146,7 @@ def search_dirs(directories: list[Path], substr: str) -> list[Path]:
     matched_files = []
 
     for directory in directories:
-        matches = directory.glob(f"*{substr}*")
+        matches = directory.rglob(f"*{substr}*") if recursive else directory.glob(f"*{substr}*")
         matched_files.extend(matches)
 
     return matched_files

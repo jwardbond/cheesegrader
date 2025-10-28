@@ -79,7 +79,7 @@ def run() -> None:
 
         # Get student file
         data, headers, csv_path = prompt_get_csv(
-            "Enter the path to the grade file (.csv) containing student UTORIDs and grades.",
+            "Enter the path to the grade file (.csv) containing student UTORIDs (and grades).",
         )
 
         # Get utorid column
@@ -93,13 +93,17 @@ def run() -> None:
             typer.echo("Select which column contains the grades.")
             grade_col = prompt_select_header(headers)
             headers.remove(grade_col)
-            grades = {data[id_col]: float(data[grade_col]) for data in data}
+            grades = {}
+            for d in data:
+                grades[d[id_col]] = float(d[grade_col]) if d[grade_col] else None
         else:
             grade_col = None
 
         if need_files:
             dir_list = prompt_get_dirs()
-            filepaths = {d[id_col]: search_dirs(dir_list, d[id_col]) for d in data}
+            recursive = confirm("Search directories recursively?")
+            filepaths = {d[id_col]: search_dirs(dir_list, d[id_col], recursive) for d in data}
+
         else:
             dir_list = None
 
@@ -179,7 +183,7 @@ def prompt_confirm_upload(
     """Display final details before uploading."""
     typer.echo("Please confirm the following details before uploading:")
     typer.echo(f"    Course: {course.course_name}")
-    typer.echo(f"    Assignment: {assignment.assignment_name}")
+    typer.echo(f"    Assignment: {assignment.name}")
     typer.echo(f"    Upload mode: {mode.name}")
     typer.echo(f"    Student file: {csv_path}")
     typer.echo(f"    ID column: {id_col}")
@@ -191,7 +195,7 @@ def prompt_confirm_upload(
         )
 
     typer.secho(
-        "\nBE VERY CERTAIN, IT IS A HUGE PAIN TO UNDO AN UPLOAD!",
+        "\nBE VERY CERTAIN, IT IS A PAIN TO UNDO AN UPLOAD!",
         bg=typer.colors.BRIGHT_RED,
         bold=True,
     )
