@@ -129,7 +129,9 @@ def download_submissions() -> None:
 
 
 def prompt_confirm_download_submissions(
-    course: QuercusCourse, assignment: QuercusAssignment, output_dir: Path
+    course: QuercusCourse,
+    assignment: QuercusAssignment,
+    output_dir: Path,
 ) -> bool:
     """Prompt the user to confirm downloading submissions."""
     typer.echo("\nPlease confirm the following information:")

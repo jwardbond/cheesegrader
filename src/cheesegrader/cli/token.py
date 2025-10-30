@@ -54,7 +54,7 @@ prompt = create_prompt(HELP_MSG)
 confirm = create_confirm(HELP_MSG)
 
 
-def ensure_token() -> str:
+def ensure_token() -> bool:
     """Prompt for token if not stored, validate, and persist."""
     use_saved = False
     token = None
@@ -86,7 +86,7 @@ def ensure_token() -> str:
 
     # Load into env
     os.environ[TOKEN_VAR_NAME] = token
-    return None
+    return True
 
 
 def load_token() -> str | None:

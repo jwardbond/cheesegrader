@@ -86,7 +86,7 @@ def create_confirm(help_msg: str) -> Callable[..., str]:
     Adds a help message and the option to enter 'q' to quit.
     """
 
-    def patched_confirm(*args, **kwargs) -> str:  # noqa: ANN002, ANN003
+    def patched_confirm(*args, **kwargs) -> bool:  # noqa: ANN002, ANN003
         while True:
             prompt_text = args[0] if args else kwargs.get("text", "")
             typer.echo()

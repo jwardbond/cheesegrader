@@ -10,3 +10,7 @@ Changed:
 
 Fixed: 
 - Missing grades no longer cause errors during upload
+
+## [1.3.4] - 2025-10-30
+Fixed:
+- Tokens now save correctly
