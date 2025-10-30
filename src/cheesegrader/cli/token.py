@@ -66,8 +66,8 @@ def ensure_token() -> str:
         token = load_token() if use_saved else None
 
     if not token:
-        typer.echo("No saved token found.")
-        token = typer.prompt("Enter your API token")
+        typer.echo("No saved token found. Enter your API token, or 'h' for help getting a token.")
+        token = prompt("Enter token")
 
     typer.echo("Validating token...")
     if not token_is_valid(token):
@@ -80,7 +80,7 @@ def ensure_token() -> str:
     typer.secho("Token validated.", fg=typer.colors.GREEN)
 
     if not use_saved:
-        save_new = confirm("Do you want to save this token for future use?", default=True)
+        save_new = confirm("Do you want to save this token for future use?")
         if save_new:
             save_token(token)
 
