@@ -14,3 +14,7 @@ Fixed:
 ## [1.3.4] - 2025-10-30
 Fixed:
 - Tokens now save correctly
+
+## [1.3.6] - 2025-11-07
+Fixed: 
+- Removes empty strings from student lists when looking for files

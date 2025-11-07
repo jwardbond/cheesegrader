@@ -118,7 +118,7 @@ def download_file(url: str, output_path: Path) -> None:
             f.write(chunk)
 
 
-def unzip_dir(input_file: Path) -> None:
+def unzip_dir(input_file: Path) -> Path:
     """Unzips a zip file to a directory.
 
     Args:

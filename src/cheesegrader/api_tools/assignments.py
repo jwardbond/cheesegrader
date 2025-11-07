@@ -288,6 +288,8 @@ class QuercusAssignment:
         """
         error_list = []
         for student_id, files in tqdm(student_files.items()):
+            if student_id is None or student_id == "":
+                continue
             if not files:
                 error_list.append(f"{student_id}: No files found for upload")
                 continue

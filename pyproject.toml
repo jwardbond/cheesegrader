@@ -1,6 +1,6 @@
 [project]
 name = "cheesegrader"
-version = "1.3.4"
+version = "1.3.6"
 description = "A collection of grading/quercus tools for University of Toronto instructors."
 readme = "README.md"
 authors = [

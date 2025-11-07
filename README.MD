@@ -48,6 +48,8 @@ To use the uploading and downloading scripts, you will need to generate and inpu
 - Multithread uploads
 - Write some more tests
 - Implement "go back" functionality
+- Add student emails to downloads
+- Fix typing errors
 
 
 ## Contact

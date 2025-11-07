@@ -83,6 +83,7 @@ def run() -> None:
         # Get utorid column
         typer.echo("Select which column contains the UTORID")
         id_col = prompt_select_header(headers)
+        data = [d for d in data if d[id_col].strip() != ""]  # Remove rows with blank IDs
 
         need_grades = mode in (UploadMode.GRADES, UploadMode.BOTH)
         need_files = mode in (UploadMode.FILES, UploadMode.BOTH)
