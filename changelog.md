@@ -18,3 +18,9 @@ Fixed:
 ## [1.3.6] - 2025-11-07
 Fixed: 
 - Removes empty strings from student lists when looking for files
+
+## [1.3.7] - 2026-12-05
+Fixed: 
+- Students who got a 0 showed up as missing a grade. This has been fixed.
+Added:
+- Dev dependencies for testing
