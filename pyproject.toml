@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     { name = "Jesse Ward-Bond", email = "jesse.wardbond@mail.utoronto.ca" },
 ]
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "requests>=2.32.5",
     "tqdm>=4.67.1",
@@ -108,3 +108,9 @@ convention = "google"
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-mock>=3.15.1",
+]
