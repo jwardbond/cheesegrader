@@ -262,10 +262,9 @@ class QuercusAssignment:
         """
         error_list = []
         for utorid, grade in tqdm(grades.items()):
-            if not grade:
+            if grade is None or grade == "":
                 error_list.append(f"{utorid}:      Missing grade")
                 continue
-
             try:
                 self.post_grade(utorid, grade)
             except Exception:  # noqa: BLE001
